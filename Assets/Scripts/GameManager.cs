@@ -117,6 +117,9 @@ public class GameManager : MonoBehaviour
                 {
                     yield return StartCoroutine(enemy.MovePathCoroutine(nextPos));
                     currentPos = nextPos;
+
+                    // Vérifie s'il y a un combat après déplacement
+                    enemy.CheckCombat();
                 }
                 else
                 {

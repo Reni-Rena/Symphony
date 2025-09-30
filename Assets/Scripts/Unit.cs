@@ -77,17 +77,23 @@ public class Unit : MonoBehaviour
     {
         GameManager gm = FindObjectOfType<GameManager>();
         if ((isEnemy && gm.currentTurn == GameManager.Turn.Player) || (!isEnemy && gm.currentTurn == GameManager.Turn.Enemy))
-            return; // bloque le mouvement si ce n'est pas le bon tour
+            return;
 
         if (hasActed)
             return;
 
-        StartCoroutine(MovePathCoroutine(targetPosition));
+        StartCoroutine(MoveAndCheckCombat(targetPosition));
         isSelected = false;
-        _renderer.color = baseColor;
         Tile.ClearHighlights();
         hasActed = true;
     }
+
+    private IEnumerator MoveAndCheckCombat(Vector2 targetPosition)
+    {
+        yield return StartCoroutine(MovePathCoroutine(targetPosition));
+        CheckCombat();
+    }
+
 
     public IEnumerator MovePathCoroutine(Vector2 targetPos)
     {
@@ -139,4 +145,57 @@ public class Unit : MonoBehaviour
     {
         return new Vector2(Mathf.Round(transform.position.x), Mathf.Round(transform.position.y));
     }
+
+    public int maxHP = 10;
+    public int currentHP;
+    public int attack = 5;
+    public int defense = 2;
+
+    void Awake()
+    {
+        currentHP = maxHP;
+    }
+
+    // Inflige des dégâts à cette unité
+    public void TakeDamage(int dmg)
+    {
+        currentHP -= dmg;
+        Debug.Log(name + " prend " + dmg + " dégâts. HP restants: " + currentHP);
+
+        if (currentHP <= 0)
+        {
+            Debug.Log(name + " est mort !");
+            Destroy(gameObject);
+        }
+    }
+
+    public void CheckCombat()
+    {
+        // Cherche toutes les unités autour (haut, bas, gauche, droite)
+        Vector2[] directions = { Vector2.up, Vector2.down, Vector2.left, Vector2.right };
+
+        foreach (Vector2 dir in directions)
+        {
+            Vector2 checkPos = (Vector2)transform.position + dir;
+            foreach (Unit other in FindObjectsOfType<Unit>())
+            {
+                if ((Vector2)other.transform.position == checkPos && other.isEnemy != this.isEnemy)
+                {
+                    // Combat trouvé
+                    int damage = Mathf.Max(1, this.attack - other.defense);
+                    other.TakeDamage(damage);
+
+                    // Riposte si vivant
+                    if (other.currentHP > 0)
+                    {
+                        int counterDamage = Mathf.Max(1, other.attack - this.defense);
+                        this.TakeDamage(counterDamage);
+                    }
+                    return; // un seul combat
+                }
+            }
+        }
+    }
+
+
 }
