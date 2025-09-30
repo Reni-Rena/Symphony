@@ -3,11 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class GameManager : MonoBehaviour
-{
+{    
+    private List<Unit> playerUnits = new List<Unit>();
+
     public enum Turn { Player, Enemy }
     public Turn currentTurn = Turn.Player;
-
-    private List<Unit> playerUnits = new List<Unit>();
 
     void Start()
     {
@@ -124,7 +124,6 @@ public class GameManager : MonoBehaviour
                 }
 
                 movesLeft--;
-                yield return new WaitForSeconds(0.1f); // petit délai entre les cases
             }
         }
 

@@ -3,12 +3,12 @@ using UnityEngine;
 public class Tile : MonoBehaviour
 {
     private SpriteRenderer _renderer;
-    private Color baseColor;
+    public Color baseColor;
+    public Color moveColor;
 
     void Start()
     {
         _renderer = GetComponent<SpriteRenderer>();
-        baseColor = _renderer.color;
     }
 
     void OnMouseDown()
@@ -23,9 +23,8 @@ public class Tile : MonoBehaviour
             }
         }
 
-        if (selectedUnit != null && _renderer.color == Color.cyan)
+        if (selectedUnit != null && _renderer.color == moveColor)
         {
-            // Vérifie qu'aucune unité n'est déjà sur cette case
             bool occupied = false;
             foreach (Unit u in FindObjectsOfType<Unit>())
             {
@@ -43,7 +42,6 @@ public class Tile : MonoBehaviour
         }
     }
 
-
     public static void HighlightTiles(Unit unit)
     {
         Tile[] tiles = FindObjectsOfType<Tile>();
@@ -56,7 +54,7 @@ public class Tile : MonoBehaviour
             float distance = Mathf.Abs(tilePos.x - unitPos.x) + Mathf.Abs(tilePos.y - unitPos.y); // distance Manhattan
             if (distance <= range)
             {
-                tile._renderer.color = Color.cyan;
+                tile._renderer.color = tile.moveColor;
             }
         }
     }

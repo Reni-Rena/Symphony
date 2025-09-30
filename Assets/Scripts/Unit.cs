@@ -6,12 +6,14 @@ public class Unit : MonoBehaviour
 {
     private bool isSelected = false;
     private SpriteRenderer _renderer;
-    private Color baseColor;
+    public Color baseColor;
+    public Color selectColor;
+    public Color usedColor;
 
     public int moveRange = 3; // nombre de cases max par tour
     public float moveSpeed = 5f; // vitesse de déplacement
-    public bool hasActed = false;
 
+    public bool hasActed = false;
     public bool isEnemy = false; // true pour les unités ennemies
 
     void Start()
@@ -19,19 +21,19 @@ public class Unit : MonoBehaviour
         _renderer = GetComponent<SpriteRenderer>();
         baseColor = _renderer.color;
     }
+
     void Update()
     {
         // Feedback visuel : couleur selon action
         if (hasActed)
         {
-            _renderer.color = Color.red * 0.7f; // rouge foncé
+            _renderer.color = usedColor;
         }
         else
         {
-            _renderer.color = isSelected ? Color.yellow : baseColor;
+            _renderer.color = isSelected ? selectColor : baseColor;
         }
     }
-
 
     void OnMouseDown()
     {
@@ -60,12 +62,15 @@ public class Unit : MonoBehaviour
             Tile.HighlightTiles(this);
     }
 
-
-
     public void Deselect()
     {
         isSelected = false;
         _renderer.color = baseColor;
+    }
+
+    public void ResetAction()
+    {
+        hasActed = false;
     }
 
     public void MoveTo(Vector2 targetPosition)
@@ -82,12 +87,6 @@ public class Unit : MonoBehaviour
         _renderer.color = baseColor;
         Tile.ClearHighlights();
         hasActed = true;
-    }
-
-
-    public void ResetAction()
-    {
-        hasActed = false;
     }
 
     public IEnumerator MovePathCoroutine(Vector2 targetPos)
