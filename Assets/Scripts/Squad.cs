@@ -1,17 +1,47 @@
 using UnityEngine;
 using System.Collections.Generic;
 
+[System.Serializable]
+public class SquadSlot
+{
+    public Unit unitPrefab; // Drag & drop d’un prefab d’unité
+    [Range(0, 2)] public int Lin;
+    [Range(0, 2)] public int Col;
+}
+
 public class Squad : MonoBehaviour
 {
-    // Grille 3x3 d’Unit
+
+    public float cellSize = 0.5f;
+    public List<SquadSlot> slots = new List<SquadSlot>();
+
     public Unit[,] formation = new Unit[3, 3];
 
-    // Ajouter une unité à une case (x = colonne, y = ligne)
-    public void AddUnit(Unit unit, int x, int y)
+
+    void Awake()
     {
-        if (x >= 0 && x < 3 && y >= 0 && y < 3)
+        BuildFormation();
+    }
+
+    // Construit la formation à partir des slots de l’inspecteur
+    public void BuildFormation()
+    {
+        formation = new Unit[3, 3];
+
+        foreach (var slot in slots)
         {
-            formation[x, y] = unit;
+            if (slot.unitPrefab != null)
+            {
+                Unit u = Instantiate(slot.unitPrefab, transform);
+                formation[slot.Lin, slot.Col] = u;
+
+                Vector3 localPos = new Vector3(
+                    (slot.Lin - 1) * cellSize,
+                    -(slot.Col - 1) * cellSize,
+                    0
+                );
+                u.transform.localPosition = localPos;
+            }
         }
     }
 

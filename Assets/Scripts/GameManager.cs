@@ -10,6 +10,10 @@ public class GameManager : MonoBehaviour
     public Turn currentTurn = Turn.Player;
     public GameObject canvas;
 
+    public Squad squadA;
+    public Squad squadB;
+    public GameObject unitPrefab;
+
     void Start()
     {
         canvas.SetActive(true);
@@ -21,6 +25,16 @@ public class GameManager : MonoBehaviour
                 playerPions.Add(u);
             u.ResetAction();
         }
+
+        
+        TestCombat();
+    }
+
+    public void TestCombat()
+    {
+        CombatSystem.ResolveCombat(squadA, squadB);
+        if (squadB.IsAlive())
+            CombatSystem.ResolveCombat(squadB, squadA);
     }
 
     public void EndPlayerTurnButton()
