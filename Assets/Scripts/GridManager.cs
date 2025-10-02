@@ -6,7 +6,7 @@ public class GridManager : MonoBehaviour
     public int height = 10;  // hauteur de la grille
     public float cellSize = 1f; // taille d'une case
 
-    public GameObject tilePrefab; // prefab de case (un simple carré SpriteRenderer)
+    public GameObject tilePrefab; // prefab de case (un simple carrÃ© SpriteRenderer)
 
     void Start()
     {

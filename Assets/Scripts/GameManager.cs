@@ -4,27 +4,29 @@ using System.Collections.Generic;
 
 public class GameManager : MonoBehaviour
 {    
-    private List<Unit> playerUnits = new List<Unit>();
+    private List<Pion> playerPions = new List<Pion>();
 
     public enum Turn { Player, Enemy }
     public Turn currentTurn = Turn.Player;
+    public GameObject canvas;
 
     void Start()
     {
-        // Récupère toutes les unités joueur au début
-        Unit[] allUnits = FindObjectsOfType<Unit>();
-        foreach (Unit u in allUnits)
+        canvas.SetActive(true);
+        // Récupère toutes les pions joueur au début
+        Pion[] allPions = FindObjectsOfType<Pion>();
+        foreach (Pion u in allPions)
         {
             if (!u.isEnemy)
-                playerUnits.Add(u);
+                playerPions.Add(u);
             u.ResetAction();
         }
     }
 
     public void EndPlayerTurnButton()
     {
-        // Marque toutes les unités joueur comme ayant agi
-        foreach (Unit u in FindObjectsOfType<Unit>())
+        // Marque toutes les pions joueur comme ayant agi
+        foreach (Pion u in FindObjectsOfType<Pion>())
         {
             if (!u.isEnemy)
                 u.hasActed = true;
@@ -45,8 +47,8 @@ public class GameManager : MonoBehaviour
 
     private IEnumerator EnemyTurn()
     {
-        Unit[] enemyUnits = FindObjectsOfType<Unit>();
-        foreach (Unit enemy in enemyUnits)
+        Pion[] enemyPions = FindObjectsOfType<Pion>();
+        foreach (Pion enemy in enemyPions)
         {
             if (enemy.isEnemy)
             {
@@ -54,8 +56,8 @@ public class GameManager : MonoBehaviour
             }
         }
 
-        // Réinitialise toutes les unités (joueur + ennemis) pour le prochain tour
-        foreach (Unit u in FindObjectsOfType<Unit>())
+        // Réinitialise toutes les pions (joueur + ennemis) pour le prochain tour
+        foreach (Pion u in FindObjectsOfType<Pion>())
         {
             u.ResetAction();
         }
@@ -65,13 +67,13 @@ public class GameManager : MonoBehaviour
     }
 
 
-    private IEnumerator EnemyAct(Unit enemy)
+    private IEnumerator EnemyAct(Pion enemy)
     {
-        Unit[] playerUnitsArray = FindObjectsOfType<Unit>();
-        Unit closest = null;
+        Pion[] playerPionsArray = FindObjectsOfType<Pion>();
+        Pion closest = null;
         float minDist = Mathf.Infinity;
 
-        foreach (Unit u in playerUnitsArray)
+        foreach (Pion u in playerPionsArray)
         {
             if (!u.isEnemy)
             {
@@ -104,7 +106,7 @@ public class GameManager : MonoBehaviour
 
                 // Vérifie que la case n'est pas occupée
                 bool occupied = false;
-                foreach (Unit u in FindObjectsOfType<Unit>())
+                foreach (Pion u in FindObjectsOfType<Pion>())
                 {
                     if ((Vector2)u.transform.position == nextPos)
                     {
@@ -119,7 +121,7 @@ public class GameManager : MonoBehaviour
                     currentPos = nextPos;
 
                     // Vérifie s'il y a un combat après déplacement
-                    enemy.CheckCombat();
+                    //enemy.CheckCombat();
                 }
                 else
                 {

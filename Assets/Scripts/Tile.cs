@@ -13,20 +13,20 @@ public class Tile : MonoBehaviour
 
     void OnMouseDown()
     {
-        Unit selectedUnit = null;
-        foreach (Unit u in FindObjectsOfType<Unit>())
+        Pion selectedPion = null;
+        foreach (Pion u in FindObjectsOfType<Pion>())
         {
             if (u.IsSelected())
             {
-                selectedUnit = u;
+                selectedPion = u;
                 break;
             }
         }
 
-        if (selectedUnit != null && _renderer.color == moveColor)
+        if (selectedPion != null && _renderer.color == moveColor)
         {
             bool occupied = false;
-            foreach (Unit u in FindObjectsOfType<Unit>())
+            foreach (Pion u in FindObjectsOfType<Pion>())
             {
                 if ((Vector2)u.transform.position == new Vector2(transform.position.x, transform.position.y))
                 {
@@ -37,21 +37,21 @@ public class Tile : MonoBehaviour
 
             if (!occupied)
             {
-                selectedUnit.MoveTo(transform.position);
+                selectedPion.MoveTo(transform.position);
             }
         }
     }
 
-    public static void HighlightTiles(Unit unit)
+    public static void HighlightTiles(Pion pion)
     {
         Tile[] tiles = FindObjectsOfType<Tile>();
-        Vector2 unitPos = unit.GetGridPosition();
-        int range = unit.GetMoveRange();
+        Vector2 pionPos = pion.GetGridPosition();
+        int range = pion.GetMoveRange();
 
         foreach (Tile tile in tiles)
         {
             Vector2 tilePos = new Vector2(Mathf.Round(tile.transform.position.x), Mathf.Round(tile.transform.position.y));
-            float distance = Mathf.Abs(tilePos.x - unitPos.x) + Mathf.Abs(tilePos.y - unitPos.y); // distance Manhattan
+            float distance = Mathf.Abs(tilePos.x - pionPos.x) + Mathf.Abs(tilePos.y - pionPos.y); // distance Manhattan
             if (distance <= range)
             {
                 tile._renderer.color = tile.moveColor;
