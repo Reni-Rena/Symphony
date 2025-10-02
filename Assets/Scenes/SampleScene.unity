@@ -631,8 +631,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   currentTurn: 0
   canvas: {fileID: 408012651}
-  squadA: {fileID: 488632589}
-  squadB: {fileID: 2009224197}
+  squadA: {fileID: 2009224197}
+  squadB: {fileID: 488632589}
   unitPrefab: {fileID: 489877810453368924, guid: 7d63b15b8e2c2d8489c0f57a4ffa8ba0, type: 3}
 --- !u!1 &1393942324
 GameObject:
@@ -910,15 +910,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5055228082062931791, guid: 7ee60a3cbb727674c993ae18d7576e3c, type: 3}
       propertyPath: slots.Array.data[1].Lin
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5055228082062931791, guid: 7ee60a3cbb727674c993ae18d7576e3c, type: 3}
       propertyPath: slots.Array.data[2].Col
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5055228082062931791, guid: 7ee60a3cbb727674c993ae18d7576e3c, type: 3}
       propertyPath: slots.Array.data[2].Lin
-      value: 1
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 5055228082062931791, guid: 7ee60a3cbb727674c993ae18d7576e3c, type: 3}
       propertyPath: slots.Array.data[0].unitPrefab
@@ -931,7 +931,11 @@ PrefabInstance:
     - target: {fileID: 5055228082062931791, guid: 7ee60a3cbb727674c993ae18d7576e3c, type: 3}
       propertyPath: slots.Array.data[2].unitPrefab
       value: 
-      objectReference: {fileID: 4521920554922712632, guid: 6f3cea468ed61be46a4d0e1c7e711045, type: 3}
+      objectReference: {fileID: 4521920554922712632, guid: 6b61a7cf54d58ea43804f97440b737e8, type: 3}
+    - target: {fileID: 7450294968969206305, guid: 7ee60a3cbb727674c993ae18d7576e3c, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8366147293762740572, guid: 7ee60a3cbb727674c993ae18d7576e3c, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -1013,6 +1017,10 @@ PrefabInstance:
       propertyPath: slots.Array.data[2].unitPrefab
       value: 
       objectReference: {fileID: 4521920554922712632, guid: 6b61a7cf54d58ea43804f97440b737e8, type: 3}
+    - target: {fileID: 7450294968969206305, guid: 7ee60a3cbb727674c993ae18d7576e3c, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8366147293762740572, guid: 7ee60a3cbb727674c993ae18d7576e3c, type: 3}
       propertyPath: m_LocalPosition.x
       value: 9
