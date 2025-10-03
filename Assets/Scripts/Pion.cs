@@ -14,11 +14,14 @@ public class Pion : MonoBehaviour
     public bool hasActed = false;
     public bool isEnemy = false; // true pour les unités ennemies
 
+    public Squad squad;
+    private Vector3 caseDepart; // stocke la position de départ
     public int moveRange = 3; // nombre de cases max par tour
     public float moveSpeed = 5f; // vitesse du déplacement
 
     void Start()
     {
+        squad = GetComponent<Squad>();
         _renderer = GetComponent<SpriteRenderer>();
         baseColor = _renderer.color;
     }
@@ -82,10 +85,12 @@ public class Pion : MonoBehaviour
         if (hasActed)
             return;
 
+        StartDeplacement();
+
         StartCoroutine(MovePathCoroutine(targetPosition));
-        isSelected = false;
         Tile.ClearHighlights();
-        hasActed = true;
+
+        EndDeplacement();
     }
 
     public IEnumerator MovePathCoroutine(Vector2 targetPos)
@@ -114,7 +119,7 @@ public class Pion : MonoBehaviour
         // Déplacer l'unité sur chaque case
         foreach (Vector2 pos in path)
         {
-            Vector3 target = new Vector3(pos.x, pos.y, -0.5f);
+            Vector3 target = new Vector3(pos.x, pos.y, transform.position.z);
             while (Vector3.Distance(transform.position, target) > 0.01f)
             {
                 transform.position = Vector3.MoveTowards(transform.position, target, moveSpeed * Time.deltaTime);
@@ -122,6 +127,54 @@ public class Pion : MonoBehaviour
             }
             transform.position = target;
         }
+    }
+
+    void StartDeplacement()
+    {
+        caseDepart = transform.position;
+    }
+
+    void EndDeplacement()
+    {
+        // Trouve le menu dans la scène
+        ActionMenuUI menu = FindObjectOfType<ActionMenuUI>();
+        menu.Show(
+            () => AnnulerDeplacement(),
+            () => ValiderDeplacement(),
+            () => Attaquer()
+        );
+    }
+
+    // Remets l’état comme avant le déplacement
+    void AnnulerDeplacement()
+    {
+        Deselect();
+        transform.position = caseDepart;
+    }
+
+    // Définis l’unité comme ayant fini son action ce tour
+    void ValiderDeplacement()
+    {
+        Deselect();
+        hasActed = true;
+    }
+
+    void Attaquer()
+    {
+        // Mets en surbrillance les cases attaquables
+        Tile.HighlightAttackableTiles(this);
+    }
+
+    public void Combat(Pion squadB)
+    {
+        CombatSystem.ResolveCombat(this.squad, squadB.squad);
+        if (squadB.squad.IsAlive())
+            CombatSystem.ResolveCombat(squadB.squad, this.squad);
+
+        Tile.ClearHighlights();
+        Deselect();
+        hasActed = true;
+
     }
 
     public bool IsSelected()

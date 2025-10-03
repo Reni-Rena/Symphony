@@ -5,6 +5,7 @@ public class Tile : MonoBehaviour
     private SpriteRenderer _renderer;
     public Color baseColor;
     public Color moveColor;
+    public Color attakColor;
 
     void Start()
     {
@@ -40,6 +41,18 @@ public class Tile : MonoBehaviour
                 selectedPion.MoveTo(transform.position);
             }
         }
+
+        if (selectedPion != null && _renderer.color == attakColor)
+        {
+            foreach (Pion u in FindObjectsOfType<Pion>())
+            {
+                if ((Vector2)u.transform.position == new Vector2(transform.position.x, transform.position.y) && u.isEnemy == true)
+                {
+                    selectedPion.Combat(u);
+                    break;
+                }
+            }
+        }
     }
 
     public static void HighlightTiles(Pion pion)
@@ -55,6 +68,22 @@ public class Tile : MonoBehaviour
             if (distance <= range)
             {
                 tile._renderer.color = tile.moveColor;
+            }
+        }
+    }
+
+    public static void HighlightAttackableTiles(Pion pion)
+    {
+        Tile[] tiles = FindObjectsOfType<Tile>();
+        Vector2 pionPos = pion.GetGridPosition();
+
+        foreach (Tile tile in tiles)
+        {
+            Vector2 tilePos = new Vector2(Mathf.Round(tile.transform.position.x), Mathf.Round(tile.transform.position.y));
+            float distance = Mathf.Abs(tilePos.x - pionPos.x) + Mathf.Abs(tilePos.y - pionPos.y); // distance Manhattan
+            if (distance <= 1)
+            {
+                tile._renderer.color = tile.attakColor;
             }
         }
     }

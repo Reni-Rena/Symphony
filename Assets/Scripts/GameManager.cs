@@ -26,15 +26,6 @@ public class GameManager : MonoBehaviour
             u.ResetAction();
         }
 
-        
-        TestCombat();
-    }
-
-    public void TestCombat()
-    {
-        CombatSystem.ResolveCombat(squadA, squadB);
-        if (squadB.IsAlive())
-            CombatSystem.ResolveCombat(squadB, squadA);
     }
 
     public void EndPlayerTurnButton()
