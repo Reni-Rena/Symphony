@@ -24,6 +24,9 @@ public class Pion : MonoBehaviour
         squad = GetComponent<Squad>();
         _renderer = GetComponent<SpriteRenderer>();
         baseColor = _renderer.color;
+
+        float Z = isEnemy ? 0.1f : -0.1f;
+        transform.position = new Vector3(transform.position.x, transform.position.y, Z);
     }
 
     void Update()

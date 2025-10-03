@@ -3,13 +3,14 @@ using UnityEngine;
 public class Tile : MonoBehaviour
 {
     private SpriteRenderer _renderer;
-    public Color baseColor;
+    private Color baseColor;
     public Color moveColor;
     public Color attakColor;
 
     void Start()
     {
         _renderer = GetComponent<SpriteRenderer>();
+        baseColor = _renderer.color;
     }
 
     void OnMouseDown()
