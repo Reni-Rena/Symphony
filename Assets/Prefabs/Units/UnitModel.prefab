@@ -115,7 +115,7 @@ GameObject:
   - component: {fileID: 2316966884609607923}
   - component: {fileID: 4521920554922712632}
   m_Layer: 0
-  m_Name: Archer
+  m_Name: UnitModel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -131,7 +131,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.3, y: 0.3, z: 0.6}
+  m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 7319327210965423651}
@@ -204,12 +204,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0968f9a4628ad8f4a87f4e5952f62d95, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  unitName: Archer
-  maxHP: 75
+  unitName: Model
+  maxHP: 0
   currentHP: 0
-  attack: 30
+  attack: 0
   defense: 0
-  isRanged: 1
+  isRanged: 0
   healthBarFill: {fileID: 7459007742255204775}
 --- !u!1 &3816458360055359662
 GameObject:

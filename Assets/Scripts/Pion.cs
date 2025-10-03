@@ -82,17 +82,11 @@ public class Pion : MonoBehaviour
         if (hasActed)
             return;
 
-        StartCoroutine(MoveAndCheckCombat(targetPosition));
+        StartCoroutine(MovePathCoroutine(targetPosition));
         isSelected = false;
         Tile.ClearHighlights();
         hasActed = true;
     }
-
-    private IEnumerator MoveAndCheckCombat(Vector2 targetPosition)
-    {
-        yield return StartCoroutine(MovePathCoroutine(targetPosition));
-    }
-
 
     public IEnumerator MovePathCoroutine(Vector2 targetPos)
     {
@@ -145,32 +139,4 @@ public class Pion : MonoBehaviour
         return new Vector2(Mathf.Round(transform.position.x), Mathf.Round(transform.position.y));
     }
 
-
-    /*public void CheckCombat()
-    {
-        // Cherche toutes les unités autour (haut, bas, gauche, droite)
-        Vector2[] directions = { Vector2.up, Vector2.down, Vector2.left, Vector2.right };
-
-        foreach (Vector2 dir in directions)
-        {
-            Vector2 checkPos = (Vector2)transform.position + dir;
-            foreach (Pion other in FindObjectsOfType<Pion>())
-            {
-                if ((Vector2)other.transform.position == checkPos && other.isEnemy != this.isEnemy)
-                {
-                    // Combat trouvé
-                    int damage = Mathf.Max(1, this.attack - other.defense);
-                    other.TakeDamage(damage);
-
-                    // Riposte si vivant
-                    if (other.currentHP > 0)
-                    {
-                        int counterDamage = Mathf.Max(1, other.attack - this.defense);
-                        this.TakeDamage(counterDamage);
-                    }
-                    return; // un seul combat
-                }
-            }
-        }
-    }*/
 }
