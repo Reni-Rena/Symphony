@@ -8,15 +8,12 @@ public class GameManager : MonoBehaviour
 
     public enum Turn { Player, Enemy }
     public Turn currentTurn = Turn.Player;
-    public GameObject canvas;
 
-    public Squad squadA;
-    public Squad squadB;
-    public GameObject unitPrefab;
+    public GameObject CombatScreen;
+
 
     void Start()
     {
-        canvas.SetActive(true);
         // Récupère toutes les pions joueur au début
         Pion[] allPions = FindObjectsOfType<Pion>();
         foreach (Pion u in allPions)
@@ -25,7 +22,50 @@ public class GameManager : MonoBehaviour
                 playerPions.Add(u);
             u.ResetAction();
         }
+    }
 
+    void Update()
+    {
+        if (Input.GetMouseButtonDown(0))
+        {
+            bool actionClick = false;
+            Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+
+            // tirer un raycast UI
+            RaycastHit2D hit = Physics2D.Raycast(mousePos, Vector2.zero, Mathf.Infinity, LayerMask.GetMask("UI"));
+            if (hit.collider != null)
+            {
+                //faire l'action de l'UI
+                actionClick = true;
+            }
+
+            if (!actionClick)
+            {
+                // tirer un raycast Tile
+                hit = Physics2D.Raycast(mousePos, Vector2.zero, Mathf.Infinity, LayerMask.GetMask("Tile"));
+                if (hit.collider != null)
+                {
+                    //faire l'action de l'de Tile
+                    Tile tile = hit.collider.GetComponent<Tile>();
+                    if (tile != null)
+                    {
+                        tile.OnClicked();
+                    }
+                }
+
+                // tirer un raycast Pion
+                hit = Physics2D.Raycast(mousePos, Vector2.zero, Mathf.Infinity, LayerMask.GetMask("Pion"));
+                if (hit.collider != null)
+                {
+                    //faire l'action de l'de Pion
+                    Pion pion = hit.collider.GetComponent<Pion>();
+                    if (pion != null)
+                    {
+                        pion.OnClicked();
+                    }
+                }
+            }
+        }
     }
 
     public void EndPlayerTurnButton()

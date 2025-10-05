@@ -25,8 +25,7 @@ public class Pion : MonoBehaviour
         _renderer = GetComponent<SpriteRenderer>();
         baseColor = _renderer.color;
 
-        float Z = isEnemy ? 0.1f : -0.1f;
-        transform.position = new Vector3(transform.position.x, transform.position.y, Z);
+        
     }
 
     void Update()
@@ -42,7 +41,7 @@ public class Pion : MonoBehaviour
         }
     }
 
-    void OnMouseDown()
+    public void OnClicked()
     {
         // Vérifie si c'est le tour joueur et si l'unité est jouable
         GameManager gm = FindObjectOfType<GameManager>();
@@ -170,9 +169,7 @@ public class Pion : MonoBehaviour
 
     public void Combat(Pion squadB)
     {
-        CombatSystem.ResolveCombat(this.squad, squadB.squad);
-        if (squadB.squad.IsAlive())
-            CombatSystem.ResolveCombat(squadB.squad, this.squad);
+        CombatSystem.ResolveCombat(this, squadB);
 
         Tile.ClearHighlights();
         Deselect();

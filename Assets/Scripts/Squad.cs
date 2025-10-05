@@ -34,13 +34,6 @@ public class Squad : MonoBehaviour
             {
                 Unit u = Instantiate(slot.unitPrefab, transform);
                 formation[slot.Lin, slot.Col] = u;
-
-                Vector3 localPos = new Vector3(
-                    (slot.Lin - 1) * cellSize,
-                    -(slot.Col - 1) * cellSize,
-                    0
-                );
-                u.transform.localPosition = localPos;
             }
         }
     }

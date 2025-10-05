@@ -147,6 +147,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c4e3bde8ea4c71b439b226367ecd0674, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  baseColor: {r: 0.7372549, g: 0.7372549, b: 0.7372549, a: 0}
   moveColor: {r: 0, g: 1, b: 1, a: 0.5882353}
   attakColor: {r: 1, g: 0.49803922, b: 0, a: 0.5882353}

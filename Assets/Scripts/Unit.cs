@@ -6,8 +6,9 @@ using System.Collections.Generic;
 public class Unit : MonoBehaviour
 {
 
-    [Header("Stats de base")]
     public string unitName = "Soldat";
+    public SpriteRenderer sprite;
+    [Header("Stats de base")]
     public int maxHP = 10;
     public int currentHP;
     public int attack = 5;
@@ -19,6 +20,7 @@ public class Unit : MonoBehaviour
 
     void Awake()
     {
+        sprite = GetComponent<SpriteRenderer>();
         currentHP = maxHP;
         UpdateHealthBar();
     }
@@ -27,7 +29,6 @@ public class Unit : MonoBehaviour
     public void TakeDamage(int dmg)
     {
         currentHP -= dmg;
-        Debug.Log(name + " prend " + dmg + " dégâts. HP restants: " + currentHP);
 
         if (currentHP <= 0)
         {

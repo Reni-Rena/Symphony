@@ -13,7 +13,7 @@ public class Tile : MonoBehaviour
         baseColor = _renderer.color;
     }
 
-    void OnMouseDown()
+    public void OnClicked()
     {
         Pion selectedPion = null;
         foreach (Pion u in FindObjectsOfType<Pion>())
