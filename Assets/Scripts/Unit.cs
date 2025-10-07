@@ -8,6 +8,7 @@ public class Unit : MonoBehaviour
 
     public string unitName = "Soldat";
     public SpriteRenderer sprite;
+
     [Header("Stats de base")]
     public int maxHP = 10;
     public int currentHP;

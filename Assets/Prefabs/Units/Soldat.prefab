@@ -205,6 +205,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   unitName: Soldat
+  sprite: {fileID: 0}
   maxHP: 100
   currentHP: 0
   attack: 20

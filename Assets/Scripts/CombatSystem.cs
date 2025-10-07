@@ -26,6 +26,7 @@ public static class CombatSystem
             Att = !Att;
             await Task.Delay(2000);
         }
+        HideCombat();
     }
         
 
@@ -52,6 +53,7 @@ public static class CombatSystem
         // 01
         image = GameObject.Find("CombatScreen/PlayerSquad/FrontRow/Left/Image").GetComponent<Image>();
         unit = Left.squad.formation[0, 0];
+        image.enabled = false;
         if (unit != null)
         {
             image.enabled = true;
@@ -61,6 +63,7 @@ public static class CombatSystem
         // 02
         image = GameObject.Find("CombatScreen/PlayerSquad/FrontRow/Center/Image").GetComponent<Image>();
         unit = Left.squad.formation[1, 0];
+        image.enabled = false;
         if (unit != null)
         {
             image.enabled = true;
@@ -70,6 +73,7 @@ public static class CombatSystem
         // 03
         image = GameObject.Find("CombatScreen/PlayerSquad/FrontRow/Right/Image").GetComponent<Image>();
         unit = Left.squad.formation[2, 0];
+        image.enabled = false;
         if (unit != null)
         {
             image.enabled = true;
@@ -79,6 +83,7 @@ public static class CombatSystem
         // 04
         image = GameObject.Find("CombatScreen/PlayerSquad/MidleRow/Left/Image").GetComponent<Image>();
         unit = Left.squad.formation[0, 1];
+        image.enabled = false;
         if (unit != null)
         {
             image.enabled = true;
@@ -88,6 +93,7 @@ public static class CombatSystem
         // 05
         image = GameObject.Find("CombatScreen/PlayerSquad/MidleRow/Center/Image").GetComponent<Image>();
         unit = Left.squad.formation[1, 1];
+        image.enabled = false;
         if (unit != null)
         {
             image.enabled = true;
@@ -97,6 +103,7 @@ public static class CombatSystem
         // 06
         image = GameObject.Find("CombatScreen/PlayerSquad/MidleRow/Right/Image").GetComponent<Image>();
         unit = Left.squad.formation[2, 1];
+        image.enabled = false;
         if (unit != null)
         {
             image.enabled = true;
@@ -106,6 +113,7 @@ public static class CombatSystem
         // 07
         image = GameObject.Find("CombatScreen/PlayerSquad/BackRow/Left/Image").GetComponent<Image>();
         unit = Left.squad.formation[0, 2];
+        image.enabled = false;
         if (unit != null)
         {
             image.enabled = true;
@@ -115,6 +123,7 @@ public static class CombatSystem
         // 08
         image = GameObject.Find("CombatScreen/PlayerSquad/BackRow/Center/Image").GetComponent<Image>();
         unit = Left.squad.formation[1, 2];
+        image.enabled = false;
         if (unit != null)
         {
             image.enabled = true;
@@ -124,6 +133,7 @@ public static class CombatSystem
         // 09
         image = GameObject.Find("CombatScreen/PlayerSquad/BackRow/Right/Image").GetComponent<Image>();
         unit = Left.squad.formation[2, 2];
+        image.enabled = false;
         if (unit != null)
         {
             image.enabled = true;
@@ -136,6 +146,7 @@ public static class CombatSystem
         // 01
         image = GameObject.Find("CombatScreen/EnemySquad/FrontRow/Left/Image").GetComponent<Image>();
         unit = Right.squad.formation[0, 0];
+        image.enabled = false;
         if (unit != null)
         {
             image.enabled = true;
@@ -146,6 +157,7 @@ public static class CombatSystem
         // 02
         image = GameObject.Find("CombatScreen/EnemySquad/FrontRow/Center/Image").GetComponent<Image>();
         unit = Right.squad.formation[1, 0];
+        image.enabled = false;
         if (unit != null)
         {
             image.enabled = true;
@@ -156,6 +168,7 @@ public static class CombatSystem
         // 03
         image = GameObject.Find("CombatScreen/EnemySquad/FrontRow/Right/Image").GetComponent<Image>();
         unit = Right.squad.formation[2, 0];
+        image.enabled = false;
         if (unit != null)
         {
             image.enabled = true;
@@ -166,6 +179,7 @@ public static class CombatSystem
         // 04
         image = GameObject.Find("CombatScreen/EnemySquad/MidleRow/Left/Image").GetComponent<Image>();
         unit = Right.squad.formation[0, 1];
+        image.enabled = false;
         if (unit != null)
         {
             image.enabled = true;
@@ -176,6 +190,7 @@ public static class CombatSystem
         // 05
         image = GameObject.Find("CombatScreen/EnemySquad/MidleRow/Center/Image").GetComponent<Image>();
         unit = Right.squad.formation[1, 1];
+        image.enabled = false;
         if (unit != null)
         {
             image.enabled = true;
@@ -186,6 +201,7 @@ public static class CombatSystem
         // 06
         image = GameObject.Find("CombatScreen/EnemySquad/MidleRow/Right/Image").GetComponent<Image>();
         unit = Right.squad.formation[2, 1];
+        image.enabled = false;
         if (unit != null)
         {
             image.enabled = true;
@@ -196,6 +212,7 @@ public static class CombatSystem
         // 07
         image = GameObject.Find("CombatScreen/EnemySquad/BackRow/Left/Image").GetComponent<Image>();
         unit = Right.squad.formation[0, 2];
+        image.enabled = false;
         if (unit != null)
         {
             image.enabled = true;
@@ -206,6 +223,7 @@ public static class CombatSystem
         // 08
         image = GameObject.Find("CombatScreen/EnemySquad/BackRow/Center/Image").GetComponent<Image>();
         unit = Right.squad.formation[1, 2];
+        image.enabled = false;
         if (unit != null)
         {
             image.enabled = true;
@@ -216,6 +234,7 @@ public static class CombatSystem
         // 09
         image = GameObject.Find("CombatScreen/EnemySquad/BackRow/Right/Image").GetComponent<Image>();
         unit = Right.squad.formation[2, 2];
+        image.enabled = false;
         if (unit != null)
         {
             image.enabled = true;
@@ -223,6 +242,11 @@ public static class CombatSystem
             image.rectTransform.localScale = new Vector3(-1, 1, 1);
         }
         
+    }
+
+    public static void HideCombat()
+    {
+        GameObject.Find("GameManager").GetComponent<GameManager>().CombatScreen.SetActive(false);
     }
 
 

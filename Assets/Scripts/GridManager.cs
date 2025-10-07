@@ -2,8 +2,10 @@ using UnityEngine;
 
 public class GridManager : MonoBehaviour
 {
-    public int width = 10;   // largeur de la grille
-    public int height = 10;  // hauteur de la grille
+    public int widthMax = 10;   // largeur de la grille
+    public int widthMin = -10;
+    public int heightMax = 10;
+    public int heightMin = -10;
     public float cellSize = 1f; // taille d'une case
 
     public GameObject tilePrefab; // prefab de case (un simple carré SpriteRenderer)
@@ -15,9 +17,9 @@ public class GridManager : MonoBehaviour
 
     void GenerateGrid()
     {
-        for (int x = 0; x < width; x++)
+        for (int x = widthMin; x < widthMax; x++)
         {
-            for (int y = 0; y < height; y++)
+            for (int y = heightMin; y < heightMax; y++)
             {
                 Vector2 position = new Vector2(x * cellSize, y * cellSize);
                 GameObject tile = Instantiate(tilePrefab, position, Quaternion.identity);
