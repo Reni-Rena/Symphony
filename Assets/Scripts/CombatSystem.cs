@@ -1,7 +1,5 @@
 using UnityEngine;
 using UnityEngine.UI;
-using System.Collections;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 
@@ -34,6 +32,7 @@ public static class CombatSystem
     {
         GameObject.Find("GameManager").GetComponent<GameManager>().CombatScreen.SetActive(true);
         Image image;
+        GameObject icone;
         Unit unit;
 
         /*
@@ -52,52 +51,82 @@ public static class CombatSystem
 
         // 01
         image = GameObject.Find("CombatScreen/PlayerSquad/FrontRow/Left/Image").GetComponent<Image>();
+        icone = GameObject.Find("SquadScreen/PlayerSquad/FrontRow/Left");
         unit = Left.squad.formation[0, 0];
         image.enabled = false;
+        icone.SetActive(false);
         if (unit != null)
         {
             image.enabled = true;
             image.sprite = unit.sprite.sprite;
+
+            icone.SetActive(true);
+            icone.GetComponentInChildren<Image>().sprite = unit.sprite.sprite;
+            icone.GetComponentInChildren<HealthBar>().unit = unit;
         }
 
         // 02
         image = GameObject.Find("CombatScreen/PlayerSquad/FrontRow/Center/Image").GetComponent<Image>();
+        icone = GameObject.Find("SquadScreen/PlayerSquad/FrontRow/Center");
         unit = Left.squad.formation[1, 0];
         image.enabled = false;
+        icone.SetActive(false);
         if (unit != null)
         {
             image.enabled = true;
             image.sprite = unit.sprite.sprite;
+
+            icone.SetActive(true);
+            icone.GetComponentInChildren<Image>().sprite = unit.sprite.sprite;
+            icone.GetComponentInChildren<HealthBar>().unit = unit;
         }
 
         // 03
         image = GameObject.Find("CombatScreen/PlayerSquad/FrontRow/Right/Image").GetComponent<Image>();
+        icone = GameObject.Find("SquadScreen/PlayerSquad/FrontRow/Right");
         unit = Left.squad.formation[2, 0];
         image.enabled = false;
+        icone.SetActive(false);
         if (unit != null)
         {
             image.enabled = true;
             image.sprite = unit.sprite.sprite;
+
+            icone.SetActive(true);
+            icone.GetComponentInChildren<Image>().sprite = unit.sprite.sprite;
+            icone.GetComponentInChildren<HealthBar>().unit = unit;
         }
 
         // 04
         image = GameObject.Find("CombatScreen/PlayerSquad/MidleRow/Left/Image").GetComponent<Image>();
+        icone = GameObject.Find("SquadScreen/PlayerSquad/MidleRow/Left");
         unit = Left.squad.formation[0, 1];
         image.enabled = false;
+        icone.GetComponentInChildren<Image>().enabled = false;
         if (unit != null)
         {
             image.enabled = true;
             image.sprite = unit.sprite.sprite;
+
+            icone.GetComponentInChildren<Image>().enabled = true;
+            icone.GetComponentInChildren<Image>().sprite = unit.sprite.sprite;
+            icone.GetComponentInChildren<HealthBar>().unit = unit;
         }
 
         // 05
         image = GameObject.Find("CombatScreen/PlayerSquad/MidleRow/Center/Image").GetComponent<Image>();
+        icone = GameObject.Find("SquadScreen/PlayerSquad/MidleRow/Center");
         unit = Left.squad.formation[1, 1];
         image.enabled = false;
+        icone.GetComponentInChildren<Image>().enabled = false;
         if (unit != null)
         {
             image.enabled = true;
             image.sprite = unit.sprite.sprite;
+
+            icone.GetComponentInChildren<Image>().enabled = true;
+            icone.GetComponentInChildren<Image>().sprite = unit.sprite.sprite;
+            icone.GetComponentInChildren<HealthBar>().unit = unit;
         }
 
         // 06
@@ -271,10 +300,10 @@ public static class CombatSystem
         }
     }
 
-    // Trouver une cible en fonction du type de l’attaquant
+    // Trouver une cible en fonction du type de lï¿½attaquant
     private static Unit FindTarget(Unit attacker, Squad defender)
     {
-        for (int y = 0; y < 3; y++) // front  arrière
+        for (int y = 0; y < 3; y++) // front  arriï¿½re
         {
             for (int x = 0; x < 3; x++)
             {
