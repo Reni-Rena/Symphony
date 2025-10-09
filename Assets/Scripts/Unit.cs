@@ -16,8 +16,6 @@ public class Unit : MonoBehaviour
     public int defense = 2;
     public bool isRanged;
 
-    [Header("Health Bar UI")]
-    public Image healthBarFill; // Assigne dans l’inspecteur
 
     void Awake()
     {
@@ -34,7 +32,6 @@ public class Unit : MonoBehaviour
         if (currentHP <= 0)
         {
             Debug.Log(name + " est mort !");
-            Destroy(gameObject);
         }
         else
         {

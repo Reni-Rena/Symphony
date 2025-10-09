@@ -31,246 +31,69 @@ public static class CombatSystem
     public static void AfficheCombat(Pion Left, Pion Right)
     {
         GameObject.Find("GameManager").GetComponent<GameManager>().CombatScreen.SetActive(true);
+        string LIN = "";
+        string COL = "";
+        Image imageL;
+        Image imageR;
+        GameObject iconeL;
+        GameObject iconeR;
+        Image[] iconeLImages;
+        Image[] iconeRImages;
+        Unit unitL;
+        Unit unitR;
+
         Image image;
         GameObject icone;
         Unit unit;
 
-        /*
-         * 01: Unit FrontRow Left
-         * 02: Unit FrontRow Center
-         * 03: Unit FrontRow Right
-         * 04: Unit MidleRow Left
-         * 05: Unit MidleRow Center
-         * 06: Unit MidleRow Right
-         * 07: Unit BackRow Left
-         * 08: Unit BackRow Center
-         * 09: Unit BackRow Right
-         */
-
-        // Player Unit 
-
-        // 01
-        image = GameObject.Find("CombatScreen/PlayerSquad/FrontRow/Left/Image").GetComponent<Image>();
-        icone = GameObject.Find("SquadScreen/PlayerSquad/FrontRow/Left");
-        unit = Left.squad.formation[0, 0];
-        image.enabled = false;
-        icone.SetActive(false);
-        if (unit != null)
+        for (int lin = 0; lin < 3; lin++)
         {
-            image.enabled = true;
-            image.sprite = unit.sprite.sprite;
+            if (lin == 0) LIN = "/FrontRow";
+            if (lin == 1) LIN = "/MidleRow";
+            if (lin == 2) LIN = "/BackRow";
 
-            icone.SetActive(true);
-            icone.GetComponentInChildren<Image>().sprite = unit.sprite.sprite;
-            icone.GetComponentInChildren<HealthBar>().unit = unit;
+            for (int col = 0; col < 3; col++)
+            {
+                if (col == 0) COL = "/Left";
+                if (col == 1) COL = "/Center";
+                if (col == 2) COL = "/Right";
+
+                imageL = GameObject.Find($"CombatScreen/PlayerSquad{LIN}{COL}/Image").GetComponent<Image>();
+                imageL.enabled = false;
+                iconeL = GameObject.Find($"SquadScreen/PlayerSquad{LIN}{COL}");
+                iconeLImages = iconeL.GetComponentsInChildren<Image>();
+                foreach (var iconeLImage in iconeLImages) iconeLImage.enabled = false;
+
+                unitL = Left.squad.formation[col, lin];
+                if (unitL != null)
+                {
+                    imageL.enabled = true;
+                    imageL.sprite = unitL.sprite.sprite;
+
+                    foreach (var iconeLImage in iconeLImages) iconeLImage.enabled = true;
+                    iconeL.GetComponentInChildren<Image>().sprite = unitL.sprite.sprite;
+                    iconeL.GetComponentInChildren<HealthBar>().unit = unitL;
+                }
+
+                imageR = GameObject.Find($"CombatScreen/EnemySquad{LIN}{COL}/Image").GetComponent<Image>();
+                imageR.enabled = false;
+                iconeR = GameObject.Find($"SquadScreen/EnemySquad{LIN}{COL}");
+                iconeRImages = iconeR.GetComponentsInChildren<Image>();
+                foreach (var iconeRImage in iconeRImages) iconeRImage.enabled = false;
+
+                unitR = Right.squad.formation[col, lin];
+                if (unitR != null)
+                {
+                    imageR.enabled = true;
+                    imageR.sprite = unitR.sprite.sprite;
+                    imageR.rectTransform.localScale = new Vector3(-1, 1, 1);
+
+                    foreach (var iconeRImage in iconeRImages) iconeRImage.enabled = true;
+                    iconeR.GetComponentInChildren<Image>().sprite = unitR.sprite.sprite;
+                    iconeR.GetComponentInChildren<HealthBar>().unit = unitR;
+                }
+            }
         }
-
-        // 02
-        image = GameObject.Find("CombatScreen/PlayerSquad/FrontRow/Center/Image").GetComponent<Image>();
-        icone = GameObject.Find("SquadScreen/PlayerSquad/FrontRow/Center");
-        unit = Left.squad.formation[1, 0];
-        image.enabled = false;
-        icone.SetActive(false);
-        if (unit != null)
-        {
-            image.enabled = true;
-            image.sprite = unit.sprite.sprite;
-
-            icone.SetActive(true);
-            icone.GetComponentInChildren<Image>().sprite = unit.sprite.sprite;
-            icone.GetComponentInChildren<HealthBar>().unit = unit;
-        }
-
-        // 03
-        image = GameObject.Find("CombatScreen/PlayerSquad/FrontRow/Right/Image").GetComponent<Image>();
-        icone = GameObject.Find("SquadScreen/PlayerSquad/FrontRow/Right");
-        unit = Left.squad.formation[2, 0];
-        image.enabled = false;
-        icone.SetActive(false);
-        if (unit != null)
-        {
-            image.enabled = true;
-            image.sprite = unit.sprite.sprite;
-
-            icone.SetActive(true);
-            icone.GetComponentInChildren<Image>().sprite = unit.sprite.sprite;
-            icone.GetComponentInChildren<HealthBar>().unit = unit;
-        }
-
-        // 04
-        image = GameObject.Find("CombatScreen/PlayerSquad/MidleRow/Left/Image").GetComponent<Image>();
-        icone = GameObject.Find("SquadScreen/PlayerSquad/MidleRow/Left");
-        unit = Left.squad.formation[0, 1];
-        image.enabled = false;
-        icone.GetComponentInChildren<Image>().enabled = false;
-        if (unit != null)
-        {
-            image.enabled = true;
-            image.sprite = unit.sprite.sprite;
-
-            icone.GetComponentInChildren<Image>().enabled = true;
-            icone.GetComponentInChildren<Image>().sprite = unit.sprite.sprite;
-            icone.GetComponentInChildren<HealthBar>().unit = unit;
-        }
-
-        // 05
-        image = GameObject.Find("CombatScreen/PlayerSquad/MidleRow/Center/Image").GetComponent<Image>();
-        icone = GameObject.Find("SquadScreen/PlayerSquad/MidleRow/Center");
-        unit = Left.squad.formation[1, 1];
-        image.enabled = false;
-        icone.GetComponentInChildren<Image>().enabled = false;
-        if (unit != null)
-        {
-            image.enabled = true;
-            image.sprite = unit.sprite.sprite;
-
-            icone.GetComponentInChildren<Image>().enabled = true;
-            icone.GetComponentInChildren<Image>().sprite = unit.sprite.sprite;
-            icone.GetComponentInChildren<HealthBar>().unit = unit;
-        }
-
-        // 06
-        image = GameObject.Find("CombatScreen/PlayerSquad/MidleRow/Right/Image").GetComponent<Image>();
-        unit = Left.squad.formation[2, 1];
-        image.enabled = false;
-        if (unit != null)
-        {
-            image.enabled = true;
-            image.sprite = unit.sprite.sprite;
-        }
-
-        // 07
-        image = GameObject.Find("CombatScreen/PlayerSquad/BackRow/Left/Image").GetComponent<Image>();
-        unit = Left.squad.formation[0, 2];
-        image.enabled = false;
-        if (unit != null)
-        {
-            image.enabled = true;
-            image.sprite = unit.sprite.sprite;
-        }
-
-        // 08
-        image = GameObject.Find("CombatScreen/PlayerSquad/BackRow/Center/Image").GetComponent<Image>();
-        unit = Left.squad.formation[1, 2];
-        image.enabled = false;
-        if (unit != null)
-        {
-            image.enabled = true;
-            image.sprite = unit.sprite.sprite;
-        }
-
-        // 09
-        image = GameObject.Find("CombatScreen/PlayerSquad/BackRow/Right/Image").GetComponent<Image>();
-        unit = Left.squad.formation[2, 2];
-        image.enabled = false;
-        if (unit != null)
-        {
-            image.enabled = true;
-            image.sprite = unit.sprite.sprite;
-        }
-
-
-        // Enemy Unit 
-
-        // 01
-        image = GameObject.Find("CombatScreen/EnemySquad/FrontRow/Left/Image").GetComponent<Image>();
-        unit = Right.squad.formation[0, 0];
-        image.enabled = false;
-        if (unit != null)
-        {
-            image.enabled = true;
-            image.sprite = unit.sprite.sprite;
-            image.rectTransform.localScale = new Vector3(-1, 1, 1);
-        }
-
-        // 02
-        image = GameObject.Find("CombatScreen/EnemySquad/FrontRow/Center/Image").GetComponent<Image>();
-        unit = Right.squad.formation[1, 0];
-        image.enabled = false;
-        if (unit != null)
-        {
-            image.enabled = true;
-            image.sprite = unit.sprite.sprite;
-            image.rectTransform.localScale = new Vector3(-1, 1, 1);
-        }
-
-        // 03
-        image = GameObject.Find("CombatScreen/EnemySquad/FrontRow/Right/Image").GetComponent<Image>();
-        unit = Right.squad.formation[2, 0];
-        image.enabled = false;
-        if (unit != null)
-        {
-            image.enabled = true;
-            image.sprite = unit.sprite.sprite;
-            image.rectTransform.localScale = new Vector3(-1, 1, 1);
-        }
-
-        // 04
-        image = GameObject.Find("CombatScreen/EnemySquad/MidleRow/Left/Image").GetComponent<Image>();
-        unit = Right.squad.formation[0, 1];
-        image.enabled = false;
-        if (unit != null)
-        {
-            image.enabled = true;
-            image.sprite = unit.sprite.sprite;
-            image.rectTransform.localScale = new Vector3(-1, 1, 1);
-        }
-
-        // 05
-        image = GameObject.Find("CombatScreen/EnemySquad/MidleRow/Center/Image").GetComponent<Image>();
-        unit = Right.squad.formation[1, 1];
-        image.enabled = false;
-        if (unit != null)
-        {
-            image.enabled = true;
-            image.sprite = unit.sprite.sprite;
-            image.rectTransform.localScale = new Vector3(-1, 1, 1);
-        }
-
-        // 06
-        image = GameObject.Find("CombatScreen/EnemySquad/MidleRow/Right/Image").GetComponent<Image>();
-        unit = Right.squad.formation[2, 1];
-        image.enabled = false;
-        if (unit != null)
-        {
-            image.enabled = true;
-            image.sprite = unit.sprite.sprite;
-            image.rectTransform.localScale = new Vector3(-1, 1, 1);
-        }
-
-        // 07
-        image = GameObject.Find("CombatScreen/EnemySquad/BackRow/Left/Image").GetComponent<Image>();
-        unit = Right.squad.formation[0, 2];
-        image.enabled = false;
-        if (unit != null)
-        {
-            image.enabled = true;
-            image.sprite = unit.sprite.sprite;
-            image.rectTransform.localScale = new Vector3(-1, 1, 1);
-        }
-
-        // 08
-        image = GameObject.Find("CombatScreen/EnemySquad/BackRow/Center/Image").GetComponent<Image>();
-        unit = Right.squad.formation[1, 2];
-        image.enabled = false;
-        if (unit != null)
-        {
-            image.enabled = true;
-            image.sprite = unit.sprite.sprite;
-            image.rectTransform.localScale = new Vector3(-1, 1, 1);
-        }
-
-        // 09
-        image = GameObject.Find("CombatScreen/EnemySquad/BackRow/Right/Image").GetComponent<Image>();
-        unit = Right.squad.formation[2, 2];
-        image.enabled = false;
-        if (unit != null)
-        {
-            image.enabled = true;
-            image.sprite = unit.sprite.sprite;
-            image.rectTransform.localScale = new Vector3(-1, 1, 1);
-        }
-        
     }
 
     public static void HideCombat()
