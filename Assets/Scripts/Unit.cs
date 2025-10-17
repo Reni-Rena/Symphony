@@ -3,38 +3,36 @@ using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
 
+public enum MoveType
+{
+    Infanterie,
+    Cavalerie,
+    Volant,
+    Maritime
+}
+[System.Flags]
+public enum UnitType
+{
+    Aucun = 0,
+    Lourd = 1 << 0,
+    Légère = 1 << 1,
+    Archerie = 1 << 2,
+    Magique = 1 << 3,
+    Support = 1 << 4
+}
+public enum RaceType
+{
+    Humain,
+    Dragonoide,
+    HommeBête,
+    Elf
+}
+
 public class Unit : MonoBehaviour
 {
 
     [SerializeField] private string unitTypeName;
     public string unitName = "Mat";
-
-    public enum MoveType
-    {
-        Infanterie,
-        Cavalerie,
-        Volant,
-        Maritime
-    }
-    public enum UnitType
-    {
-        Lourd,
-        Légère,
-        Archerie,
-        Magique,
-        Support
-    }
-    public enum RaceType
-    {
-        Humain,
-        Dragonoide,
-        HommeBête,
-        Elf
-    }
-    public enum AttackType
-    {
-       Basic
-    }
 
     [Header("Sprits")]
     public Sprite iconeSprite;
@@ -44,7 +42,7 @@ public class Unit : MonoBehaviour
     [Header("Stats d'unité")]
     [SerializeField] private int unitTier = 1;
     [SerializeField] private MoveType moveType;
-    [SerializeField] private UnitType[] unitType;
+    [SerializeField] private UnitType unitType;
     [SerializeField] private int range = 1;
     public Vector2Int size = new Vector2Int(2, 2);
 
@@ -71,7 +69,6 @@ public class Unit : MonoBehaviour
 
     [Header("Stats de Combat")]
     [SerializeField] private int AttackOrder;
-    [SerializeField] private AttackType attacktype;
     public Unit target;
 
     [Header("Stats de base")]
@@ -115,6 +112,14 @@ public class Unit : MonoBehaviour
             currentHP = 0;
         }
     }
+    public void HealDamage(int heal)
+    {
+        currentHP += heal;
+        if (currentHP > maxHP)
+        {
+            currentHP = maxHP;
+        }
+    }
 
     public int DealDamage()
     {
@@ -123,4 +128,6 @@ public class Unit : MonoBehaviour
     }
 
     public int GetAttackOrder() { return AttackOrder; }
+    public UnitType GetUnitType() { return unitType; }
+
 }

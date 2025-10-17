@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 1757044708927144586}
   - component: {fileID: 5055228082062931791}
   m_Layer: 7
-  m_Name: Pion
+  m_Name: Pion +
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -170,7 +170,25 @@ MonoBehaviour:
   gridWidth: 6
   gridHeight: 6
   cellSize: 0.6
-  slots: []
+  slots:
+  - unitPrefab: {fileID: 4521920554922712632, guid: 6b61a7cf54d58ea43804f97440b737e8, type: 3}
+    x: 0
+    y: 0
+  - unitPrefab: {fileID: 4521920554922712632, guid: 6b61a7cf54d58ea43804f97440b737e8, type: 3}
+    x: 2
+    y: 0
+  - unitPrefab: {fileID: 4521920554922712632, guid: 6b61a7cf54d58ea43804f97440b737e8, type: 3}
+    x: 4
+    y: 0
+  - unitPrefab: {fileID: 4521920554922712632, guid: 6b61a7cf54d58ea43804f97440b737e8, type: 3}
+    x: 0
+    y: 2
+  - unitPrefab: {fileID: 4521920554922712632, guid: 6b61a7cf54d58ea43804f97440b737e8, type: 3}
+    x: 2
+    y: 2
+  - unitPrefab: {fileID: 4521920554922712632, guid: 6b61a7cf54d58ea43804f97440b737e8, type: 3}
+    x: 4
+    y: 2
   attackTargetFirstLine: []
   attackUnprotectedUnits: []
   attackHurtUnit: []

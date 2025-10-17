@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using UnityEditor.Experimental.GraphView;
 
 
 public static class CombatSystem
@@ -15,7 +16,7 @@ public static class CombatSystem
         else
             AfficheCombat(defender, attacker);
 
-        await Task.Delay(5000);
+        await Task.Delay(1000);
         bool Att = true;
         for (int i = 0; i < 6; i++)
         {
@@ -24,7 +25,7 @@ public static class CombatSystem
             else
                 CombatSystem.ResolveAttack(defender.squad, attacker.squad);
             Att = !Att;
-            await Task.Delay(5000);
+            await Task.Delay(500);
         }
         HideCombat();
     }
@@ -121,7 +122,6 @@ public static class CombatSystem
 
         Debug.Log(" Combat entre " + attacker.name + " et " + defender.name);
 
-        Debug.Log("666 : " + attackRound5.Count);
 
         // Update Attack Round
         foreach (Unit u in attacker.GetLivingUnits())
@@ -151,29 +151,115 @@ public static class CombatSystem
                     break;
             }
         }
+        
+        // 2 : Unité magic
+        if (!(attackRound2.Count == 0))
+        {
+            foreach (Unit u in attackRound2)
+            {
+                if (u.GetComponent<UnitMagic>().CanAttack()) u.target = FindUnprotectedUnits(defender);
+                else u.target = null;
+            }
+            foreach (Unit u in attackRound2)
+            {
+                if (u.target != null)
+                {
+                    u.target.TakeDamage(u.DealDamage());
+                    List<Unit> secondaryTarget = u.GetComponent<UnitMagic>().GetSecondaryTarget(defender, u.target);
+                    foreach (Unit t in secondaryTarget)
+                    {
+                        t.TakeDamage(u.DealDamage()/2);
+                    }
+                }
+            }
+            defender.UpdatedAttackInfo();
+        }
 
-        Debug.Log("666 : " + attackRound5.Count);
+        // 3 : Unité archerie
+        if (!(attackRound3.Count == 0))
+        {
+            foreach (Unit u in attackRound3)
+            {
+                u.target = FindUnprotectedUnits(defender);
+            }
+            foreach (Unit u in attackRound3)
+            {
+                if (u.target != null) u.target.TakeDamage(u.DealDamage());
+            }
+            defender.UpdatedAttackInfo();
+        }
+
+        // 4 : Unité légère
+        if (!(attackRound4.Count == 0))
+        {
+            foreach (Unit u in attackRound4)
+            {
+                u.target = FindTargetFirstLine(defender);
+            }
+            foreach (Unit u in attackRound4)
+            {
+                if (u.target != null) u.target.TakeDamage(u.DealDamage());
+            }
+            defender.UpdatedAttackInfo();
+        }
+
         // 5 : Unité lourd
         if (!(attackRound5.Count == 0))
         {
             foreach (Unit u in attackRound5)
             {
                 u.target = FindTargetFirstLine(defender);
-                Debug.Log(u.unitName + " target = " + u.target);
             }
             foreach (Unit u in attackRound5)
             {
-                u.target.TakeDamage(u.DealDamage());
+                if (u.target != null) u.target.TakeDamage(u.DealDamage());
             }
             defender.UpdatedAttackInfo();
         }
 
+        // 6 : Unité support (Défensif)
+        if (!(attackRound6.Count == 0))
+        {
+            foreach (Unit u in attackRound6)
+            {
+                u.target = FindHurtUnit(attacker);
+            }
+            foreach (Unit u in attackRound6)
+            {
+                if (u.target != null) u.target.HealDamage(u.DealDamage());
+            }
+            attacker.UpdatedAttackInfo();
+        }
+
     }
 
-    // Trouver une cible en fonction du type de l�attaquant
+    // Trouver une cible (Première ligne)
     private static Unit FindTargetFirstLine(Squad defender)
     {
+        if (defender.attackTargetFirstLine.Count == 0) return null;
+
         int randomIndex = Random.Range(0, defender.attackTargetFirstLine.Count);
         return defender.attackTargetFirstLine[randomIndex];
+    }
+
+    // Trouver une cible (Unité non protéger)
+    private static Unit FindUnprotectedUnits(Squad defender)
+    {
+        if (defender.attackUnprotectedUnits.Count == 0) return null;
+
+        int randomIndex = Random.Range(0, defender.attackUnprotectedUnits.Count);
+        return defender.attackUnprotectedUnits[randomIndex];
+        
+        
+    }
+
+    // Trouver une cible (Blèsser)
+    private static Unit FindHurtUnit(Squad attacker)
+    {
+        if (attacker.attackHurtUnit.Count == 0) return null;
+
+        int randomIndex = Random.Range(0, attacker.attackHurtUnit.Count);
+        return attacker.attackHurtUnit[randomIndex];
+        
     }
 }

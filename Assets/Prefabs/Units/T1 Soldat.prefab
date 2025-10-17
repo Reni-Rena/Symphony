@@ -1,0 +1,101 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &489877810453368924
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8357428943772722871}
+  - component: {fileID: 4521920554922712632}
+  - component: {fileID: -3342406241589151122}
+  m_Layer: 0
+  m_Name: T1 Soldat
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8357428943772722871
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 489877810453368924}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 1
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4521920554922712632
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 489877810453368924}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0968f9a4628ad8f4a87f4e5952f62d95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  unitTypeName: Soldat
+  unitName: Mat
+  iconeSprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
+  iconeDeadSprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
+  imageSprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
+  unitTier: 1
+  moveType: 0
+  unitType: 1
+  range: 1
+  size: {x: 2, y: 2}
+  lvlHP: 10
+  lvlArmor: 0.9
+  APStrength: 1
+  APAgility: 0.5
+  APMagic: 0.2
+  MinHP: 110
+  MaxHP: 135
+  MinArmor: 7
+  MaxArmor: 12
+  MinStrength: 17
+  MaxStrength: 24
+  MinAgility: 9
+  MaxAgility: 15
+  MinMagic: 7
+  MaxMagic: 12
+  MinLead: 22
+  MaxLead: 38
+  AttackOrder: 5
+  target: {fileID: 0}
+  raceType: 0
+  lvl: 0
+  XP: 0
+  maxHP: 0
+  currentHP: 0
+  armor: 0
+  strength: 0
+  agility: 0
+  magic: 0
+  lead: 0
+  protectedCase: 1
+--- !u!114 &-3342406241589151122
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 489877810453368924}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 25221ce3d61e0364a87ca86f880d0467, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  attackType: 0
+  protectedCase: 1

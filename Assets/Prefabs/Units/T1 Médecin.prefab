@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 8357428943772722871}
   - component: {fileID: 4521920554922712632}
   m_Layer: 0
-  m_Name: UnitModel
+  m_Name: "T1 M\xE9decin"
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -44,22 +44,35 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0968f9a4628ad8f4a87f4e5952f62d95, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  unitTypeName: 
-  unitName: Model
-  iconeSprite: {fileID: 0}
-  iconeDeadSprite: {fileID: 0}
-  imageSprite: {fileID: 0}
-  moveType: 0
-  unitType: 
+  unitTypeName: "M\xE9decin"
+  unitName: Mat
+  iconeSprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
+  iconeDeadSprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
+  imageSprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   unitTier: 1
-  lvlHP: 0
-  lvlArmor: 0
-  APStrength: 0
-  APAgility: 0
-  APMagic: 0
+  moveType: 0
+  unitType: 16
   range: 1
-  MinHP: 0
-  MaxHP: 0
+  size: {x: 2, y: 2}
+  lvlHP: 5
+  lvlArmor: 0.65
+  APStrength: 0.05
+  APAgility: 0.05
+  APMagic: 1.1
+  MinHP: 80
+  MaxHP: 100
+  MinArmor: 2
+  MaxArmor: 4
+  MinStrength: 8
+  MaxStrength: 10
+  MinAgility: 8
+  MaxAgility: 10
+  MinMagic: 16
+  MaxMagic: 22
+  MinLead: 22
+  MaxLead: 38
+  AttackOrder: 6
+  target: {fileID: 0}
   raceType: 0
   lvl: 0
   XP: 0
@@ -69,4 +82,4 @@ MonoBehaviour:
   strength: 0
   agility: 0
   magic: 0
-  lead: 110
+  lead: 0

@@ -10,8 +10,9 @@ GameObject:
   m_Component:
   - component: {fileID: 8357428943772722871}
   - component: {fileID: 4521920554922712632}
+  - component: {fileID: 3480293587358256716}
   m_Layer: 0
-  m_Name: Soldat
+  m_Name: T1 Apprentie
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -44,34 +45,34 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0968f9a4628ad8f4a87f4e5952f62d95, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  unitTypeName: Soldat
+  unitTypeName: Apprentie
   unitName: Mat
   iconeSprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   iconeDeadSprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   imageSprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   unitTier: 1
   moveType: 0
-  unitType: 00000000
+  unitType: 8
   range: 1
-  lvlHP: 10
-  lvlArmor: 0.9
-  APStrength: 1
-  APAgility: 0.5
-  APMagic: 0.25
-  MinHP: 110
-  MaxHP: 130
-  MinArmor: 10
-  MaxArmor: 15
-  MinStrength: 15
-  MaxStrength: 20
-  MinAgility: 7
-  MaxAgility: 13
-  MinMagic: 5
-  MaxMagic: 11
-  MinLead: 32
-  MaxLead: 48
-  AttackOrder: 5
-  attacktype: 0
+  size: {x: 2, y: 2}
+  lvlHP: 5
+  lvlArmor: 0.65
+  APStrength: 0.05
+  APAgility: 0.05
+  APMagic: 2.5
+  MinHP: 80
+  MaxHP: 100
+  MinArmor: 4
+  MaxArmor: 6
+  MinStrength: 8
+  MaxStrength: 10
+  MinAgility: 8
+  MaxAgility: 10
+  MinMagic: 16
+  MaxMagic: 22
+  MinLead: 22
+  MaxLead: 38
+  AttackOrder: 2
   target: {fileID: 0}
   raceType: 0
   lvl: 0
@@ -83,3 +84,18 @@ MonoBehaviour:
   agility: 0
   magic: 0
   lead: 0
+--- !u!114 &3480293587358256716
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 489877810453368924}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 095948a73d274444f9bdbdebad915c1f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  attackType: 0
+  spellIncantation: 3
+  incantation: 0
