@@ -16,7 +16,7 @@ public static class CombatSystem
         else
             AfficheCombat(defender, attacker);
 
-        await Task.Delay(1000);
+        await Task.Delay(5000);
         bool Att = true;
         for (int i = 0; i < 6; i++)
         {
@@ -25,7 +25,7 @@ public static class CombatSystem
             else
                 CombatSystem.ResolveAttack(defender.squad, attacker.squad);
             Att = !Att;
-            await Task.Delay(500);
+            await Task.Delay(3000);
         }
         HideCombat();
     }
