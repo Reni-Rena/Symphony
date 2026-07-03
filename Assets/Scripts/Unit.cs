@@ -1,7 +1,5 @@
 using UnityEngine;
-using UnityEngine.UI;
-using System.Collections;
-using System.Collections.Generic;
+using System;
 
 public enum MoveType
 {
@@ -15,7 +13,7 @@ public enum UnitType
 {
     Aucun = 0,
     Lourd = 1 << 0,
-    Légère = 1 << 1,
+    Legere = 1 << 1,
     Archerie = 1 << 2,
     Magique = 1 << 3,
     Support = 1 << 4
@@ -24,17 +22,16 @@ public enum RaceType
 {
     Humain,
     Dragonoide,
-    HommeBête,
+    HommeBete,
     Elf
 }
 
 public class Unit : MonoBehaviour
 {
-
     [SerializeField] private string unitTypeName;
     public string unitName = "Mat";
 
-    [Header("Sprits")]
+    [Header("Sprites")]
     public Sprite iconeSprite;
     public Sprite iconeDeadSprite;
     public Sprite imageSprite;
@@ -83,42 +80,44 @@ public class Unit : MonoBehaviour
     public int magic;
     public int lead;
 
+    // Déclenché quand l'unité vient de mourir (une seule fois)
+    public event Action<Unit> OnDeath;
+
+    public bool IsDead => currentHP <= 0;
 
     void Awake()
     {
-        maxHP = Random.Range(MinHP, MaxHP+1);
-        armor = Random.Range(MinArmor, MaxArmor+1);
-        strength = Random.Range(MinStrength, MaxStrength+1);
-        agility = Random.Range(MinAgility, MaxAgility+1);
-        magic = Random.Range(MinMagic, MaxMagic+1);
-        lead = Random.Range(MinLead, MaxLead+1);
+        maxHP = UnityEngine.Random.Range(MinHP, MaxHP + 1);
+        armor = UnityEngine.Random.Range(MinArmor, MaxArmor + 1);
+        strength = UnityEngine.Random.Range(MinStrength, MaxStrength + 1);
+        agility = UnityEngine.Random.Range(MinAgility, MaxAgility + 1);
+        magic = UnityEngine.Random.Range(MinMagic, MaxMagic + 1);
+        lead = UnityEngine.Random.Range(MinLead, MaxLead + 1);
         currentHP = maxHP;
         lvl = 1;
         XP = 0;
     }
 
-    // Inflige des dégâts à cette unité
     public void TakeDamage(int dmg)
     {
-        int realDmg = dmg - armor;
-        if (realDmg < 0) realDmg = 0;
-        currentHP -= realDmg;
-        Debug.Log(unitName + " prend " + realDmg + " (" + dmg + " - " + armor + ")");
+        if (IsDead) return; // deja morte, on ignore
 
+        int realDmg = Mathf.Max(0, dmg - armor);
+        currentHP -= realDmg;
+        Debug.Log($"{unitName} prend {realDmg} ({dmg} - {armor})");
 
         if (currentHP <= 0)
         {
-            // l'unité est dead
             currentHP = 0;
+            OnDeath?.Invoke(this); // notifie l'UI
         }
     }
+
     public void HealDamage(int heal)
     {
-        currentHP += heal;
-        if (currentHP > maxHP)
-        {
-            currentHP = maxHP;
-        }
+        if (IsDead) return; // on ne soigne pas les morts
+
+        currentHP = Mathf.Min(currentHP + heal, maxHP);
     }
 
     public int DealDamage()
@@ -129,5 +128,4 @@ public class Unit : MonoBehaviour
 
     public int GetAttackOrder() { return AttackOrder; }
     public UnitType GetUnitType() { return unitType; }
-
 }

@@ -3,23 +3,25 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class GameManager : MonoBehaviour
-{    
+{
+    public static GameManager Instance;
+
     private List<Pion> playerPions = new List<Pion>();
 
     public enum Turn { Player, Enemy }
     public Turn currentTurn = Turn.Player;
 
-    public GameObject CombatScreen;
-
+    void Awake()
+    {
+        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
+        Instance = this;
+    }
 
     void Start()
     {
-        // Récupère toutes les pions joueur au début
-        Pion[] allPions = FindObjectsOfType<Pion>();
-        foreach (Pion u in allPions)
+        foreach (Pion u in FindObjectsOfType<Pion>())
         {
-            if (!u.isEnemy)
-                playerPions.Add(u);
+            if (!u.isEnemy) playerPions.Add(u);
             u.ResetAction();
         }
     }
@@ -31,38 +33,26 @@ public class GameManager : MonoBehaviour
             bool actionClick = false;
             Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 
-            // tirer un raycast UI
             RaycastHit2D hit = Physics2D.Raycast(mousePos, Vector2.zero, Mathf.Infinity, LayerMask.GetMask("UI"));
             if (hit.collider != null)
             {
-                //faire l'action de l'UI
                 actionClick = true;
             }
 
             if (!actionClick)
             {
-                // tirer un raycast Tile
                 hit = Physics2D.Raycast(mousePos, Vector2.zero, Mathf.Infinity, LayerMask.GetMask("Tile"));
                 if (hit.collider != null)
                 {
-                    //faire l'action de l'de Tile
                     Tile tile = hit.collider.GetComponent<Tile>();
-                    if (tile != null)
-                    {
-                        tile.OnClicked();
-                    }
+                    if (tile != null) tile.OnClicked();
                 }
 
-                // tirer un raycast Pion
                 hit = Physics2D.Raycast(mousePos, Vector2.zero, Mathf.Infinity, LayerMask.GetMask("Pion"));
                 if (hit.collider != null)
                 {
-                    //faire l'action de l'de Pion
                     Pion pion = hit.collider.GetComponent<Pion>();
-                    if (pion != null)
-                    {
-                        pion.OnClicked();
-                    }
+                    if (pion != null) pion.OnClicked();
                 }
             }
         }
@@ -70,114 +60,149 @@ public class GameManager : MonoBehaviour
 
     public void EndPlayerTurnButton()
     {
-        // Marque toutes les pions joueur comme ayant agi
         foreach (Pion u in FindObjectsOfType<Pion>())
-        {
-            if (!u.isEnemy)
-                u.hasActed = true;
-        }
+            if (!u.isEnemy) u.hasActed = true;
 
         EndPlayerTurn();
     }
 
-
     void EndPlayerTurn()
     {
+        // Vérifie la fin de partie avant de passer au tour ennemi
+        if (CheckGameOver()) return;
+
         currentTurn = Turn.Enemy;
         Debug.Log("Tour Ennemi");
-
-        // Lancer les actions ennemies
         StartCoroutine(EnemyTurn());
     }
 
     private IEnumerator EnemyTurn()
     {
-        Pion[] enemyPions = FindObjectsOfType<Pion>();
-        foreach (Pion enemy in enemyPions)
+        foreach (Pion enemy in FindObjectsOfType<Pion>())
         {
+            if (enemy == null) continue;
             if (enemy.isEnemy)
-            {
                 yield return StartCoroutine(EnemyAct(enemy));
-            }
         }
 
-        // Réinitialise toutes les pions (joueur + ennemis) pour le prochain tour
         foreach (Pion u in FindObjectsOfType<Pion>())
-        {
             u.ResetAction();
-        }
 
         currentTurn = Turn.Player;
         Debug.Log("Tour Joueur");
-    }
 
+        // Vérifie la fin de partie après le tour ennemi
+        CheckGameOver();
+    }
 
     private IEnumerator EnemyAct(Pion enemy)
     {
-        Pion[] playerPionsArray = FindObjectsOfType<Pion>();
-        Pion closest = null;
-        float minDist = Mathf.Infinity;
+        Pion closest = GetClosestPlayerPion(enemy);
+        if (closest == null) yield break;
 
-        foreach (Pion u in playerPionsArray)
+        Vector2 currentPos = enemy.GetGridPosition();
+        Vector2 targetPos = closest.GetGridPosition();
+        int movesLeft = enemy.moveRange;
+
+        while (movesLeft > 0 && currentPos != targetPos)
         {
-            if (!u.isEnemy)
+            if (Vector2.Distance(currentPos, targetPos) <= 1f)
             {
-                float dist = Vector2.Distance(u.GetGridPosition(), enemy.GetGridPosition());
-                if (dist < minDist)
+                TriggerCombat(enemy, closest);
+                yield break;
+            }
+
+            Vector2 nextPos = currentPos;
+            Vector2 direction = targetPos - currentPos;
+
+            if (Mathf.Abs(direction.x) >= Mathf.Abs(direction.y))
+                nextPos.x += Mathf.Sign(direction.x);
+            else
+                nextPos.y += Mathf.Sign(direction.y);
+
+            bool occupied = false;
+            foreach (Pion u in FindObjectsOfType<Pion>())
+            {
+                if (u != enemy && (Vector2)u.transform.position == nextPos)
                 {
-                    minDist = dist;
-                    closest = u;
+                    occupied = true;
+                    if (!u.isEnemy) { TriggerCombat(enemy, u); yield break; }
+                    break;
                 }
             }
-        }
 
-        if (closest != null)
-        {
-            Vector2 currentPos = enemy.GetGridPosition();
-            Vector2 targetPos = closest.GetGridPosition();
-
-            int movesLeft = enemy.moveRange;
-
-            while (movesLeft > 0 && currentPos != targetPos)
+            if (!occupied)
             {
-                Vector2 nextPos = currentPos;
+                yield return StartCoroutine(enemy.MovePathCoroutine(nextPos));
+                currentPos = nextPos;
 
-                // Déplacement simple : priorise X, puis Y
-                Vector2 direction = targetPos - currentPos;
-                if (Mathf.Abs(direction.x) > Mathf.Abs(direction.y))
-                    nextPos.x += Mathf.Sign(direction.x);
-                else
-                    nextPos.y += Mathf.Sign(direction.y);
-
-                // Vérifie que la case n'est pas occupée
-                bool occupied = false;
-                foreach (Pion u in FindObjectsOfType<Pion>())
-                {
-                    if ((Vector2)u.transform.position == nextPos)
-                    {
-                        occupied = true;
-                        break;
-                    }
-                }
-
-                if (!occupied)
-                {
-                    yield return StartCoroutine(enemy.MovePathCoroutine(nextPos));
-                    currentPos = nextPos;
-
-                    // Vérifie s'il y a un combat après déplacement
-                    //enemy.CheckCombat();
-                }
-                else
-                {
-                    break; // bloqué, stop
-                }
-
-                movesLeft--;
+                Pion adjacent = GetAdjacentPlayerPion(enemy);
+                if (adjacent != null) { TriggerCombat(enemy, adjacent); yield break; }
             }
+            else
+            {
+                break;
+            }
+
+            movesLeft--;
         }
 
         enemy.hasActed = true;
     }
 
+    // Vérifie si la partie est terminée — retourne true si c'est le cas
+    public bool CheckGameOver()
+    {
+        bool playerAlive = false;
+        bool enemyAlive = false;
+
+        foreach (Pion p in FindObjectsOfType<Pion>())
+        {
+            if (p.isEnemy) enemyAlive = true;
+            else playerAlive = true;
+        }
+
+        if (!playerAlive)
+        {
+            GameOverUI.Instance?.ShowDefeat();
+            return true;
+        }
+        if (!enemyAlive)
+        {
+            GameOverUI.Instance?.ShowVictory();
+            return true;
+        }
+        return false;
+    }
+
+    private Pion GetClosestPlayerPion(Pion enemy)
+    {
+        Pion closest = null;
+        float minDist = Mathf.Infinity;
+
+        foreach (Pion u in FindObjectsOfType<Pion>())
+        {
+            if (!u.isEnemy)
+            {
+                float dist = Vector2.Distance(u.GetGridPosition(), enemy.GetGridPosition());
+                if (dist < minDist) { minDist = dist; closest = u; }
+            }
+        }
+        return closest;
+    }
+
+    private Pion GetAdjacentPlayerPion(Pion enemy)
+    {
+        foreach (Pion u in FindObjectsOfType<Pion>())
+            if (!u.isEnemy && Vector2.Distance(u.GetGridPosition(), enemy.GetGridPosition()) <= 1f)
+                return u;
+        return null;
+    }
+
+    private void TriggerCombat(Pion enemy, Pion player)
+    {
+        Debug.Log($"{enemy.name} attaque {player.name} !");
+        enemy.hasActed = true;
+        CombatSystem.ResolveCombat(enemy, player);
+    }
 }

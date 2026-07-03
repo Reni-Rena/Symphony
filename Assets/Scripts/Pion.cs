@@ -12,133 +12,96 @@ public class Pion : MonoBehaviour
 
     private bool isSelected = false;
     public bool hasActed = false;
-    public bool isEnemy = false; // true pour les unités ennemies
+    public bool isEnemy = false;
 
     public Squad squad;
-    private Vector3 caseDepart; // stocke la position de départ
-    public int moveRange = 3; // nombre de cases max par tour
-    public float moveSpeed = 5f; // vitesse du déplacement
+    private Vector3 caseDepart;
+    public int moveRange = 3;
+    public float moveSpeed = 5f;
 
     void Start()
     {
         squad = GetComponent<Squad>();
         _renderer = GetComponent<SpriteRenderer>();
         baseColor = _renderer.color;
-
-        
     }
 
     void Update()
     {
-        // Feedback visuel : couleur selon action
         if (hasActed)
-        {
             _renderer.color = usedColor;
-        }
         else
-        {
             _renderer.color = isSelected ? selectColor : baseColor;
-        }
     }
 
     public void OnClicked()
     {
-        // Vérifie si c'est le tour joueur et si l'unité est jouable
         GameManager gm = FindObjectOfType<GameManager>();
-        if (gm.currentTurn != GameManager.Turn.Player || isEnemy)
-            return;
+        if (gm.currentTurn != GameManager.Turn.Player || isEnemy) return;
 
-        // Deselect toutes les autres pions
-        Pion[] allPions = FindObjectsOfType<Pion>();
-        foreach (Pion u in allPions)
-        {
-            if (u != this)
-                u.Deselect(); // désélectionne
-        }
+        foreach (Pion u in FindObjectsOfType<Pion>())
+            if (u != this) u.Deselect();
 
-        // Annule les highlights des cases avant de sélectionner la nouvelle unité
         Tile.ClearHighlights();
 
-        // Sélectionne cette unité
         isSelected = !isSelected;
         _renderer.color = isSelected ? Color.yellow : baseColor;
 
-        // Met à jour les cases accessibles pour cette unité
-        if (isSelected)
-            Tile.HighlightTiles(this);
+        if (isSelected) Tile.HighlightTiles(this);
     }
 
-    public void Deselect()
-    {
-        isSelected = false;
-    }
-
-    public void ResetAction()
-    {
-        hasActed = false;
-    }
+    public void Deselect() { isSelected = false; }
+    public void ResetAction() { hasActed = false; }
 
     public void MoveTo(Vector2 targetPosition)
     {
         GameManager gm = FindObjectOfType<GameManager>();
-        if ((isEnemy && gm.currentTurn == GameManager.Turn.Player) || (!isEnemy && gm.currentTurn == GameManager.Turn.Enemy))
-            return;
-
-        if (hasActed)
-            return;
+        if ((isEnemy && gm.currentTurn == GameManager.Turn.Player) ||
+            (!isEnemy && gm.currentTurn == GameManager.Turn.Enemy)) return;
+        if (hasActed) return;
 
         StartDeplacement();
-
         StartCoroutine(MovePathCoroutine(targetPosition));
         Tile.ClearHighlights();
-
         EndDeplacement();
     }
 
     public IEnumerator MovePathCoroutine(Vector2 targetPos)
     {
-        Vector2 currentPos = new Vector2(Mathf.Round(transform.position.x), Mathf.Round(transform.position.y));
+        Vector2 currentPos = new Vector2(
+            Mathf.Round(transform.position.x),
+            Mathf.Round(transform.position.y));
+
         List<Vector2> path = new List<Vector2>();
 
-        // Calculer le chemin simple : d'abord X, ensuite Y
         float dx = targetPos.x - currentPos.x;
         float dy = targetPos.y - currentPos.y;
 
         int stepX = dx > 0 ? 1 : -1;
         for (int i = 0; i < Mathf.Abs(dx); i++)
-        {
-            currentPos.x += stepX;
-            path.Add(new Vector2(currentPos.x, currentPos.y));
-        }
+        { currentPos.x += stepX; path.Add(currentPos); }
 
         int stepY = dy > 0 ? 1 : -1;
         for (int i = 0; i < Mathf.Abs(dy); i++)
-        {
-            currentPos.y += stepY;
-            path.Add(new Vector2(currentPos.x, currentPos.y));
-        }
+        { currentPos.y += stepY; path.Add(currentPos); }
 
-        // Déplacer l'unité sur chaque case
         foreach (Vector2 pos in path)
         {
             Vector3 target = new Vector3(pos.x, pos.y, transform.position.z);
             while (Vector3.Distance(transform.position, target) > 0.01f)
             {
-                transform.position = Vector3.MoveTowards(transform.position, target, moveSpeed * Time.deltaTime);
+                transform.position = Vector3.MoveTowards(
+                    transform.position, target, moveSpeed * Time.deltaTime);
                 yield return null;
             }
             transform.position = target;
         }
     }
 
-    void StartDeplacement()
-    {
-        caseDepart = transform.position;
-    }
+    void StartDeplacement() { caseDepart = transform.position; }
 
     void EndDeplacement()
     {
-        // Trouve le menu dans la scène
         ActionMenuUI menu = FindObjectOfType<ActionMenuUI>();
         menu.Show(
             () => AnnulerDeplacement(),
@@ -147,49 +110,32 @@ public class Pion : MonoBehaviour
         );
     }
 
-    // Remets l’état comme avant le déplacement
-    void AnnulerDeplacement()
-    {
-        Deselect();
-        transform.position = caseDepart;
-    }
+    void AnnulerDeplacement() { Deselect(); transform.position = caseDepart; }
+    void ValiderDeplacement() { Deselect(); hasActed = true; }
 
-    // Définis l’unité comme ayant fini son action ce tour
-    void ValiderDeplacement()
-    {
-        Deselect();
-        hasActed = true;
-    }
-
-    void Attaquer()
-    {
-        // Mets en surbrillance les cases attaquables
-        Tile.HighlightAttackableTiles(this);
-    }
+    void Attaquer() { Tile.HighlightAttackableTiles(this); }
 
     public void Combat(Pion squadB)
     {
         CombatSystem.ResolveCombat(this, squadB);
-
         Tile.ClearHighlights();
         Deselect();
         hasActed = true;
-
     }
 
-    public bool IsSelected()
+    // Appelé par CombatSystem quand toute l'escouade est morte
+    public void Die()
     {
-        return isSelected;
+        Debug.Log(gameObject.name + " est éliminé !");
+        Destroy(gameObject);
     }
 
-    public int GetMoveRange()
-    {
-        return moveRange;
-    }
-
+    public bool IsSelected() { return isSelected; }
+    public int GetMoveRange() { return moveRange; }
     public Vector2 GetGridPosition()
     {
-        return new Vector2(Mathf.Round(transform.position.x), Mathf.Round(transform.position.y));
+        return new Vector2(
+        Mathf.Round(transform.position.x),
+        Mathf.Round(transform.position.y));
     }
-
 }
