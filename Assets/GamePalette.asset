@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4c9a36b1e5120844a8ede70d911dabe5, type: 3}
+  m_Name: GamePalette
+  m_EditorClassIdentifier: 
+  encreNoire01: {r: 0.173, g: 0.102, b: 0.055, a: 1}
+  encreNoire02: {r: 0.161, g: 0.078, b: 0.031, a: 1}
+  terreCuite01: {r: 0.478, g: 0.29, b: 0.118, a: 1}
+  terreCuite02: {r: 0.396, g: 0.2, b: 0.055, a: 1}
+  orBrule: {r: 0.784, g: 0.584, b: 0.227, a: 1}
+  orClaire: {r: 0.961, g: 0.788, b: 0.478, a: 1}
+  parchemin: {r: 0.941, g: 0.902, b: 0.784, a: 1}
+  bleuRoyal01: {r: 0.118, g: 0.227, b: 0.373, a: 1}
+  bleuRoyal02: {r: 0.035, g: 0.184, b: 0.369, a: 1}
+  bordeaux01: {r: 0.29, g: 0.118, b: 0.18, a: 1}
+  bordeaux02: {r: 0.369, g: 0.004, b: 0.227, a: 1}
+  vertForet: {r: 0.118, g: 0.29, b: 0.18, a: 1}

@@ -1,0 +1,126 @@
+using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
+
+public class HUDManager : MonoBehaviour
+{
+    public static HUDManager Instance;
+
+    [Header("Top Bar")]
+    public Image turnDot;
+    public TextMeshProUGUI turnLabel;
+    public TextMeshProUGUI turnNumber;
+    public Button endTurnButton;
+
+    [Header("Couleurs tour")]
+    public GamePalette palette;
+
+    [Header("Side Panel")]
+    public GameObject sidePanel;
+    public Image portraitIcon;
+    public TextMeshProUGUI squadName;
+    public TextMeshProUGUI squadType;
+    public TextMeshProUGUI statPortee;
+    public TextMeshProUGUI statDeplacement;
+    public Transform movePipsContainer;
+
+    [Header("Pip prefabs")]
+    public GameObject unitPipPrefab;   // petit carré bleu (unité vivante)
+    public GameObject unitPipDeadPrefab; // petit carré grisé (unité morte)
+    public GameObject movePipPrefab;   // petit carré or (déplacement dispo)
+    public GameObject movePipUsedPrefab; // petit carré grisé (déplacement utilisé)
+
+    [Header("Bottom Bar")]
+    public TextMeshProUGUI terrainLabel;
+    public TextMeshProUGUI terrainDef;
+    public TextMeshProUGUI positionLabel;
+
+    private int turnCount = 1;
+
+    void Awake()
+    {
+        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
+        Instance = this;
+    }
+
+    void Start()
+    {
+        endTurnButton.onClick.AddListener(() => FindObjectOfType<GameManager>().EndPlayerTurnButton());
+        HidePanel();
+        RefreshTurnDisplay(GameManager.Turn.Player);
+    }
+
+    // TOUR
+
+    public void RefreshTurnDisplay(GameManager.Turn turn)
+    {
+        bool isPlayer = turn == GameManager.Turn.Player;
+
+        turnDot.color = isPlayer ? palette.orBrule : palette.bordeaux03;
+        turnLabel.text = isPlayer ? "TOUR JOUEUR" : "TOUR ENNEMI";
+        turnLabel.color = isPlayer ? palette.orBrule : palette.bordeaux03;
+        turnNumber.text = $"— Tour {turnCount}";
+
+        // Bouton fin de tour uniquement actif pendant le tour joueur
+        endTurnButton.interactable = isPlayer;
+
+        if (!isPlayer) turnCount++;
+    }
+
+    // PANNEAU LATÉRAL
+
+    public void ShowPionInfo(Pion pion)
+    {
+        sidePanel.SetActive(true);
+
+        Squad squad = pion.squad;
+        if (squad == null) return;
+
+        // Portrait
+        SpriteRenderer sr = pion.GetComponent<SpriteRenderer>();
+        if (sr != null && portraitIcon != null)
+            portraitIcon.sprite = sr.sprite;
+
+        // Nom & type
+        squadName.text = pion.gameObject.name;
+        squadType.text = squad.name;
+
+        // Stats (moyennes de l'escouade)
+        statPortee.text = "1"; // à brancher si tu ajoutes une portée sur Squad
+        statDeplacement.text = pion.moveRange.ToString();
+
+        // Pips déplacement
+        int movesLeft = pion.hasActed ? 0 : pion.moveRange;
+        RefreshPips(movePipsContainer, movesLeft, pion.moveRange, movePipPrefab, movePipUsedPrefab);
+    }
+
+    public void HidePanel()
+    {
+        if (sidePanel != null) sidePanel.SetActive(false);
+    }
+
+    private void RefreshPips(Transform container, int active, int total,
+                              GameObject activePrefab, GameObject inactivePrefab)
+    {
+        if (container == null) return;
+
+        // Vide les pips existants
+        foreach (Transform child in container)
+            Destroy(child.gameObject);
+
+        for (int i = 0; i < total; i++)
+        {
+            GameObject prefab = i < active ? activePrefab : inactivePrefab;
+            if (prefab != null) Instantiate(prefab, container);
+        }
+    }
+
+    // BOTTOM BAR
+
+    public void UpdateBottomBar(string terrain, int defense, Vector2 position)
+    {
+        if (terrainLabel != null) terrainLabel.text = terrain;
+        if (terrainDef != null) terrainDef.text = defense >= 0 ? $"+{defense}" : $"{defense}";
+        if (positionLabel != null) positionLabel.text = $"{(int)position.x}, {(int)position.y}";
+    }
+}
