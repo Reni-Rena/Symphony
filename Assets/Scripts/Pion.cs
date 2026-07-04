@@ -36,10 +36,10 @@ public class Pion : MonoBehaviour
 
     public void OnClicked()
     {
-        GameManager gm = FindObjectOfType<GameManager>();
+        GameManager gm = FindAnyObjectByType<GameManager>();
         if (gm.currentTurn != GameManager.Turn.Player || isEnemy) return;
 
-        foreach (Pion u in FindObjectsOfType<Pion>())
+        foreach (Pion u in FindObjectsByType<Pion>(FindObjectsSortMode.None))
             if (u != this) u.Deselect();
 
         Tile.ClearHighlights();
@@ -68,7 +68,7 @@ public class Pion : MonoBehaviour
 
     public void MoveTo(Vector2 targetPosition)
     {
-        GameManager gm = FindObjectOfType<GameManager>();
+        GameManager gm = FindAnyObjectByType<GameManager>();
         if ((isEnemy && gm.currentTurn == GameManager.Turn.Player) ||
             (!isEnemy && gm.currentTurn == GameManager.Turn.Enemy)) return;
         if (hasActed) return;
@@ -115,7 +115,7 @@ public class Pion : MonoBehaviour
 
     void EndDeplacement()
     {
-        ActionMenuUI menu = FindObjectOfType<ActionMenuUI>();
+        ActionMenuUI menu = FindAnyObjectByType<ActionMenuUI>();
         menu.Show(
             () => AnnulerDeplacement(),
             () => ValiderDeplacement(),

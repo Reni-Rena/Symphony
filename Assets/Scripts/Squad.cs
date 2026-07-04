@@ -149,7 +149,6 @@ public class Squad : MonoBehaviour
                         frontUnit.currentHP > 0 &&
                         frontUnit.GetUnitType().HasFlag(UnitType.Lourd))
                     {
-                        Debug.Log(unit + " : y="+y+", cell.y="+cell.y);
                         if (frontUnit.GetComponent<UnitHeavy>().protectedCase + y >= cell.y)
                         {
                             isProtected = true;
@@ -160,7 +159,6 @@ public class Squad : MonoBehaviour
 
                 if (isProtected) break;
             }
-            Debug.Log(unit);
             if (!isProtected) Unprotected.Add(unit);
         }
 

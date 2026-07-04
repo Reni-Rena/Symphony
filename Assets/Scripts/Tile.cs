@@ -16,7 +16,7 @@ public class Tile : MonoBehaviour
     public void OnClicked()
     {
         Pion selectedPion = null;
-        foreach (Pion u in FindObjectsOfType<Pion>())
+        foreach (Pion u in FindObjectsByType<Pion>(FindObjectsSortMode.None))
         {
             if (u.IsSelected())
             {
@@ -28,7 +28,7 @@ public class Tile : MonoBehaviour
         if (selectedPion != null && _renderer.color == moveColor)
         {
             bool occupied = false;
-            foreach (Pion u in FindObjectsOfType<Pion>())
+            foreach (Pion u in FindObjectsByType<Pion>(FindObjectsSortMode.None))
             {
                 if ((Vector2)u.transform.position == new Vector2(transform.position.x, transform.position.y))
                 {
@@ -45,7 +45,7 @@ public class Tile : MonoBehaviour
 
         if (selectedPion != null && _renderer.color == attakColor)
         {
-            foreach (Pion u in FindObjectsOfType<Pion>())
+            foreach (Pion u in FindObjectsByType<Pion>(FindObjectsSortMode.None))
             {
                 if ((Vector2)u.transform.position == new Vector2(transform.position.x, transform.position.y) && u.isEnemy == true)
                 {
@@ -58,7 +58,7 @@ public class Tile : MonoBehaviour
 
     public static void HighlightTiles(Pion pion)
     {
-        Tile[] tiles = FindObjectsOfType<Tile>();
+        Tile[] tiles = FindObjectsByType<Tile>(FindObjectsSortMode.None);
         Vector2 pionPos = pion.GetGridPosition();
         int range = pion.GetMoveRange();
 
@@ -75,7 +75,7 @@ public class Tile : MonoBehaviour
 
     public static void HighlightAttackableTiles(Pion pion)
     {
-        Tile[] tiles = FindObjectsOfType<Tile>();
+        Tile[] tiles = FindObjectsByType<Tile>(FindObjectsSortMode.None);
         Vector2 pionPos = pion.GetGridPosition();
 
         foreach (Tile tile in tiles)
@@ -91,7 +91,7 @@ public class Tile : MonoBehaviour
 
     public static void ClearHighlights()
     {
-        Tile[] tiles = FindObjectsOfType<Tile>();
+        Tile[] tiles = FindObjectsByType<Tile>(FindObjectsSortMode.None);
         foreach (Tile tile in tiles)
         {
             tile._renderer.color = tile.baseColor;

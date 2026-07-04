@@ -17,7 +17,7 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
-        foreach (Pion u in FindObjectsOfType<Pion>())
+        foreach (Pion u in FindObjectsByType<Pion>(FindObjectsSortMode.None))
             u.ResetAction();
 
         HUDManager.Instance?.UpdateTopBar(currentTurn);
@@ -54,7 +54,7 @@ public class GameManager : MonoBehaviour
 
     public void EndPlayerTurnButton()
     {
-        foreach (Pion u in FindObjectsOfType<Pion>())
+        foreach (Pion u in FindObjectsByType<Pion>(FindObjectsSortMode.None))
             if (!u.isEnemy) u.hasActed = true;
 
         EndPlayerTurn();
@@ -72,14 +72,14 @@ public class GameManager : MonoBehaviour
 
     private IEnumerator EnemyTurn()
     {
-        foreach (Pion enemy in FindObjectsOfType<Pion>())
+        foreach (Pion enemy in FindObjectsByType<Pion>(FindObjectsSortMode.None))
         {
             if (enemy == null) continue;
             if (enemy.isEnemy)
                 yield return StartCoroutine(EnemyAct(enemy));
         }
 
-        foreach (Pion u in FindObjectsOfType<Pion>())
+        foreach (Pion u in FindObjectsByType<Pion>(FindObjectsSortMode.None))
             u.ResetAction();
 
         currentTurn = Turn.Player;
@@ -115,7 +115,7 @@ public class GameManager : MonoBehaviour
                 nextPos.y += Mathf.Sign(direction.y);
 
             bool occupied = false;
-            foreach (Pion u in FindObjectsOfType<Pion>())
+            foreach (Pion u in FindObjectsByType<Pion>(FindObjectsSortMode.None))
             {
                 if (u != enemy && (Vector2)u.transform.position == nextPos)
                 {
@@ -146,7 +146,7 @@ public class GameManager : MonoBehaviour
         bool playerAlive = false;
         bool enemyAlive = false;
 
-        foreach (Pion p in FindObjectsOfType<Pion>())
+        foreach (Pion p in FindObjectsByType<Pion>(FindObjectsSortMode.None))
         {
             if (p.isEnemy) enemyAlive = true;
             else playerAlive = true;
@@ -161,7 +161,7 @@ public class GameManager : MonoBehaviour
     {
         Pion closest = null;
         float minDist = Mathf.Infinity;
-        foreach (Pion u in FindObjectsOfType<Pion>())
+        foreach (Pion u in FindObjectsByType<Pion>(FindObjectsSortMode.None))
         {
             if (!u.isEnemy)
             {
@@ -174,7 +174,7 @@ public class GameManager : MonoBehaviour
 
     private Pion GetAdjacentPlayerPion(Pion enemy)
     {
-        foreach (Pion u in FindObjectsOfType<Pion>())
+        foreach (Pion u in FindObjectsByType<Pion>(FindObjectsSortMode.None))
             if (!u.isEnemy && Vector2.Distance(u.GetGridPosition(), enemy.GetGridPosition()) <= 1f)
                 return u;
         return null;

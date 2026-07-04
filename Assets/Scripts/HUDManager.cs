@@ -18,18 +18,19 @@ public class HUDManager : MonoBehaviour
 
     [Header("Side Panel")]
     public GameObject sidePanel;
+    public Image portraitBackground;
     public Image portraitIcon;
     public TextMeshProUGUI squadName;
     public TextMeshProUGUI squadType;
+    public TextMeshProUGUI statPorteeTitle;
     public TextMeshProUGUI statPortee;
+    public TextMeshProUGUI statDeplacementTitle;
     public TextMeshProUGUI statDeplacement;
     public Transform movePipsContainer;
 
     [Header("Pip prefabs")]
-    public GameObject unitPipPrefab;   // petit carré bleu (unité vivante)
-    public GameObject unitPipDeadPrefab; // petit carré grisé (unité morte)
-    public GameObject movePipPrefab;   // petit carré or (déplacement dispo)
-    public GameObject movePipUsedPrefab; // petit carré grisé (déplacement utilisé)
+    public GameObject movePipPrefab;   // petit carre or (deplacement dispo)
+    public GameObject movePipUsedPrefab; // petit carre grise (deplacement utilise)
 
     [Header("Bottom Bar")]
     public Image bottomBar;
@@ -60,16 +61,25 @@ public class HUDManager : MonoBehaviour
     public void InitializedColor()
     {
         topBar.color = palette.encreNoire02; 
-        turnNumber.color = palette.encreNoire03;
+        turnNumber.color = palette.terreCuite01;
         endTurnButton.GetComponent<Image>().color = palette.encreNoire02;
         endTurnButton.GetComponentInChildren<TextMeshProUGUI>().color = palette.parchemin;
 
+        portraitBackground.color = palette.encreNoire01;
+        portraitIcon.color = palette.parchemin;
+        squadName.color = palette.orBrule;
+        squadType.color = palette.terreCuite01;
+        statPorteeTitle.color = palette.terreCuite01;
+        statPortee.color = palette.parchemin;
+        statDeplacementTitle.color = palette.terreCuite01;
+        statDeplacement.color = palette.parchemin;
+
         bottomBar.color = palette.encreNoire02;
-        terrainLabelTitle.color = palette.encreNoire03;
+        terrainLabelTitle.color = palette.terreCuite01;
         terrainLabel.color = palette.parchemin;
-        terrainDefTitle.color = palette.encreNoire03;
+        terrainDefTitle.color = palette.terreCuite01;
         terrainDef.color = palette.parchemin;
-        positionLabelTitle.color = palette.encreNoire03;
+        positionLabelTitle.color = palette.terreCuite01;
         positionLabel.color = palette.parchemin;
     }
 
