@@ -47,10 +47,23 @@ public class Pion : MonoBehaviour
         isSelected = !isSelected;
         _renderer.color = isSelected ? Color.yellow : baseColor;
 
-        if (isSelected) Tile.HighlightTiles(this);
+        if (isSelected)
+        {
+            Tile.HighlightTiles(this);
+            HUDManager.Instance?.ShowPionInfo(this); // affiche les infos
+        }
+        else
+        {
+            HUDManager.Instance?.HidePanel(); // cache le panneau si on déselectionne
+        }
     }
 
-    public void Deselect() { isSelected = false; }
+    public void Deselect()
+    {
+        isSelected = false;
+        HUDManager.Instance?.HidePanel();
+    }
+
     public void ResetAction() { hasActed = false; }
 
     public void MoveTo(Vector2 targetPosition)
@@ -112,7 +125,6 @@ public class Pion : MonoBehaviour
 
     void AnnulerDeplacement() { Deselect(); transform.position = caseDepart; }
     void ValiderDeplacement() { Deselect(); hasActed = true; }
-
     void Attaquer() { Tile.HighlightAttackableTiles(this); }
 
     public void Combat(Pion squadB)
@@ -123,7 +135,6 @@ public class Pion : MonoBehaviour
         hasActed = true;
     }
 
-    // Appelé par CombatSystem quand toute l'escouade est morte
     public void Die()
     {
         Debug.Log(gameObject.name + " est éliminé !");

@@ -32,8 +32,12 @@ public class HUDManager : MonoBehaviour
     public GameObject movePipUsedPrefab; // petit carré grisé (déplacement utilisé)
 
     [Header("Bottom Bar")]
+    public Image bottomBar;
+    public TextMeshProUGUI terrainLabelTitle;
     public TextMeshProUGUI terrainLabel;
+    public TextMeshProUGUI terrainDefTitle;
     public TextMeshProUGUI terrainDef;
+    public TextMeshProUGUI positionLabelTitle;
     public TextMeshProUGUI positionLabel;
 
     private int turnCount = 1;
@@ -50,6 +54,7 @@ public class HUDManager : MonoBehaviour
         HidePanel();
         InitializedColor();
         UpdateTopBar(GameManager.Turn.Player);
+        UpdateBottomBar("plaine", 6, new Vector2(3, 3));
     }
 
     public void InitializedColor()
@@ -58,6 +63,14 @@ public class HUDManager : MonoBehaviour
         turnNumber.color = palette.encreNoire03;
         endTurnButton.GetComponent<Image>().color = palette.encreNoire02;
         endTurnButton.GetComponentInChildren<TextMeshProUGUI>().color = palette.parchemin;
+
+        bottomBar.color = palette.encreNoire02;
+        terrainLabelTitle.color = palette.encreNoire03;
+        terrainLabel.color = palette.parchemin;
+        terrainDefTitle.color = palette.encreNoire03;
+        terrainDef.color = palette.parchemin;
+        positionLabelTitle.color = palette.encreNoire03;
+        positionLabel.color = palette.parchemin;
     }
 
     // TOP BAR
