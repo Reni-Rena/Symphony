@@ -6,14 +6,15 @@ public class HUDManager : MonoBehaviour
 {
     public static HUDManager Instance;
 
+    [Header("Couleurs tour")]
+    public GamePalette palette;
+
     [Header("Top Bar")]
+    public Image topBar;
     public Image turnDot;
     public TextMeshProUGUI turnLabel;
     public TextMeshProUGUI turnNumber;
-    public Button endTurnButton;
-
-    [Header("Couleurs tour")]
-    public GamePalette palette;
+    public GameObject endTurnButton;
 
     [Header("Side Panel")]
     public GameObject sidePanel;
@@ -45,24 +46,33 @@ public class HUDManager : MonoBehaviour
 
     void Start()
     {
-        endTurnButton.onClick.AddListener(() => FindObjectOfType<GameManager>().EndPlayerTurnButton());
+        endTurnButton.GetComponent<Button>().onClick.AddListener(() => FindAnyObjectByType<GameManager>().EndPlayerTurnButton());
         HidePanel();
-        RefreshTurnDisplay(GameManager.Turn.Player);
+        InitializedColor();
+        UpdateTopBar(GameManager.Turn.Player);
     }
 
-    // TOUR
+    public void InitializedColor()
+    {
+        topBar.color = palette.encreNoire02; 
+        turnNumber.color = palette.encreNoire03;
+        endTurnButton.GetComponent<Image>().color = palette.encreNoire02;
+        endTurnButton.GetComponentInChildren<TextMeshProUGUI>().color = palette.parchemin;
+    }
 
-    public void RefreshTurnDisplay(GameManager.Turn turn)
+    // TOP BAR
+
+    public void UpdateTopBar(GameManager.Turn turn)
     {
         bool isPlayer = turn == GameManager.Turn.Player;
 
         turnDot.color = isPlayer ? palette.orBrule : palette.bordeaux03;
         turnLabel.text = isPlayer ? "TOUR JOUEUR" : "TOUR ENNEMI";
         turnLabel.color = isPlayer ? palette.orBrule : palette.bordeaux03;
-        turnNumber.text = $"— Tour {turnCount}";
+        turnNumber.text = $"- Tour {turnCount}";
 
         // Bouton fin de tour uniquement actif pendant le tour joueur
-        endTurnButton.interactable = isPlayer;
+        endTurnButton.GetComponent<Button>().interactable = isPlayer;
 
         if (!isPlayer) turnCount++;
     }

@@ -6,8 +6,6 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
 
-    private List<Pion> playerPions = new List<Pion>();
-
     public enum Turn { Player, Enemy }
     public Turn currentTurn = Turn.Player;
 
@@ -20,10 +18,9 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         foreach (Pion u in FindObjectsOfType<Pion>())
-        {
-            if (!u.isEnemy) playerPions.Add(u);
             u.ResetAction();
-        }
+
+        HUDManager.Instance?.UpdateTopBar(currentTurn);
     }
 
     void Update()
@@ -34,10 +31,7 @@ public class GameManager : MonoBehaviour
             Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 
             RaycastHit2D hit = Physics2D.Raycast(mousePos, Vector2.zero, Mathf.Infinity, LayerMask.GetMask("UI"));
-            if (hit.collider != null)
-            {
-                actionClick = true;
-            }
+            if (hit.collider != null) actionClick = true;
 
             if (!actionClick)
             {
@@ -68,10 +62,10 @@ public class GameManager : MonoBehaviour
 
     void EndPlayerTurn()
     {
-        // Vérifie la fin de partie avant de passer au tour ennemi
         if (CheckGameOver()) return;
 
         currentTurn = Turn.Enemy;
+        HUDManager.Instance?.UpdateTopBar(currentTurn);
         Debug.Log("Tour Ennemi");
         StartCoroutine(EnemyTurn());
     }
@@ -89,9 +83,9 @@ public class GameManager : MonoBehaviour
             u.ResetAction();
 
         currentTurn = Turn.Player;
+        HUDManager.Instance?.UpdateTopBar(currentTurn);
         Debug.Log("Tour Joueur");
 
-        // Vérifie la fin de partie après le tour ennemi
         CheckGameOver();
     }
 
@@ -139,10 +133,7 @@ public class GameManager : MonoBehaviour
                 Pion adjacent = GetAdjacentPlayerPion(enemy);
                 if (adjacent != null) { TriggerCombat(enemy, adjacent); yield break; }
             }
-            else
-            {
-                break;
-            }
+            else break;
 
             movesLeft--;
         }
@@ -150,7 +141,6 @@ public class GameManager : MonoBehaviour
         enemy.hasActed = true;
     }
 
-    // Vérifie si la partie est terminée — retourne true si c'est le cas
     public bool CheckGameOver()
     {
         bool playerAlive = false;
@@ -162,16 +152,8 @@ public class GameManager : MonoBehaviour
             else playerAlive = true;
         }
 
-        if (!playerAlive)
-        {
-            GameOverUI.Instance?.ShowDefeat();
-            return true;
-        }
-        if (!enemyAlive)
-        {
-            GameOverUI.Instance?.ShowVictory();
-            return true;
-        }
+        if (!playerAlive) { GameOverUI.Instance?.ShowDefeat(); return true; }
+        if (!enemyAlive) { GameOverUI.Instance?.ShowVictory(); return true; }
         return false;
     }
 
@@ -179,7 +161,6 @@ public class GameManager : MonoBehaviour
     {
         Pion closest = null;
         float minDist = Mathf.Infinity;
-
         foreach (Pion u in FindObjectsOfType<Pion>())
         {
             if (!u.isEnemy)
