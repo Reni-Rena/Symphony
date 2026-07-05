@@ -2,8 +2,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
 
-// À attacher sur le GameObject "CombatScreen" dans la scène.
-// Assigne combatScreen et squadScreen dans l'inspecteur.
 public class CombatUI : MonoBehaviour
 {
     public static CombatUI Instance;
@@ -15,9 +13,9 @@ public class CombatUI : MonoBehaviour
     private const int GRID_SIZE = 6;
     private static readonly string[] INDEX = { "/1", "/2", "/3", "/4", "/5", "/6" };
 
-    // Garde en mémoire les slots d'affichage pour chaque unité vivante
-    // afin de pouvoir les cacher rapidement à la mort
-    private Dictionary<Unit, Image> unitToImage = new Dictionary<Unit, Image>();
+    // Pour chaque unité : toutes les Images du combatScreen qui lui appartiennent
+    private Dictionary<Unit, List<Image>> unitToImages = new Dictionary<Unit, List<Image>>();
+    // Pour chaque unité : les Images de l'icône (squadScreen) - une seule entrée par unité
     private Dictionary<Unit, Image[]> unitToIcImages = new Dictionary<Unit, Image[]>();
 
     void Awake()
@@ -30,7 +28,7 @@ public class CombatUI : MonoBehaviour
 
     public void ShowCombat(Pion left, Pion right)
     {
-        unitToImage.Clear();
+        unitToImages.Clear();
         unitToIcImages.Clear();
 
         combatScreen.SetActive(true);
@@ -41,29 +39,33 @@ public class CombatUI : MonoBehaviour
 
     public void HideCombat()
     {
-        // Désabonne tous les events avant de fermer (évite les fuites)
-        foreach (Unit u in unitToImage.Keys)
+        foreach (Unit u in unitToImages.Keys)
             u.OnDeath -= OnUnitDied;
 
-        unitToImage.Clear();
+        unitToImages.Clear();
         unitToIcImages.Clear();
 
         combatScreen.SetActive(false);
         squadScreen.SetActive(false);
     }
 
-    // Appelé automatiquement quand une unité meurt (via l'event OnDeath)
     private void OnUnitDied(Unit unit)
     {
-        if (unitToImage.TryGetValue(unit, out Image img))
-            img.enabled = false;
+        // Cache tous les sprites de cette unité (les 4 cases du 2×2)
+        if (unitToImages.TryGetValue(unit, out List<Image> imgs))
+            foreach (var img in imgs) img.enabled = false;
 
+        // Cache l'icône et la barre de vie
         if (unitToIcImages.TryGetValue(unit, out Image[] icImages))
             foreach (var ic in icImages) ic.enabled = false;
     }
 
     private void RefreshSquadDisplay(Pion pion, string squadName, bool mirrorSprite)
     {
+        // Unités déjà traitées (pour dédupliquer les unités 2×2+)
+        HashSet<Unit> processedUnits = new HashSet<Unit>();
+
+        // D'abord, désactive tout
         for (int lin = 0; lin < GRID_SIZE; lin++)
         {
             for (int col = 0; col < GRID_SIZE; col++)
@@ -71,43 +73,63 @@ public class CombatUI : MonoBehaviour
                 string slot = INDEX[lin] + INDEX[col];
 
                 Transform imageT = combatScreen.transform.Find($"{squadName}{slot}/Image");
-                Image image = imageT != null ? imageT.GetComponent<Image>() : null;
+                if (imageT != null) imageT.GetComponent<Image>().enabled = false;
 
                 Transform iconeT = squadScreen.transform.Find($"{squadName}{slot}");
-                Image[] iconeImages = iconeT != null ? iconeT.GetComponentsInChildren<Image>() : null;
+                if (iconeT != null)
+                    foreach (var img in iconeT.GetComponentsInChildren<Image>())
+                        img.enabled = false;
+            }
+        }
 
-                // Désactive tout par défaut
-                if (image != null) image.enabled = false;
-                if (iconeImages != null) foreach (var img in iconeImages) img.enabled = false;
-
+        // Ensuite, affiche chaque unité unique
+        for (int lin = 0; lin < GRID_SIZE; lin++)
+        {
+            for (int col = 0; col < GRID_SIZE; col++)
+            {
                 Unit unit = pion.squad.formation[col, lin];
                 if (unit == null || unit.IsDead) continue;
 
-                // Grand sprite
-                if (image != null)
-                {
-                    image.enabled = true;
-                    image.sprite = unit.imageSprite;
-                    image.rectTransform.localScale = mirrorSprite ? new Vector3(-1, 1, 1) : Vector3.one;
+                string slot = INDEX[lin] + INDEX[col];
 
-                    // Enregistre le slot pour réagir à la mort
-                    unitToImage[unit] = image;
+                //  Grand sprite (une image par case occupée) 
+                Transform imageT = combatScreen.transform.Find($"{squadName}{slot}/Image");
+                if (imageT != null)
+                {
+                    Image img = imageT.GetComponent<Image>();
+                    img.enabled = true;
+                    img.sprite = unit.imageSprite;
+                    img.rectTransform.localScale = mirrorSprite ? new Vector3(-1, 1, 1) : Vector3.one;
+
+                    // Enregistre toutes les images de cette unité (les 4 cases du 2×2)
+                    if (!unitToImages.ContainsKey(unit))
+                        unitToImages[unit] = new List<Image>();
+                    unitToImages[unit].Add(img);
                 }
 
-                // Icône + HealthBar
-                if (iconeT != null && iconeImages != null)
+                //  Icône + barre de vie : une seule fois par unité 
+                if (!processedUnits.Contains(unit))
                 {
-                    foreach (var img in iconeImages) img.enabled = true;
-                    iconeT.GetComponentInChildren<Image>().sprite = unit.iconeSprite;
+                    processedUnits.Add(unit);
 
-                    HealthBar hb = iconeT.GetComponentInChildren<HealthBar>();
-                    if (hb != null) hb.unit = unit;
+                    Transform iconeT = squadScreen.transform.Find($"{squadName}{slot}");
+                    if (iconeT != null)
+                    {
+                        Image[] iconeImages = iconeT.GetComponentsInChildren<Image>();
+                        foreach (var ic in iconeImages) ic.enabled = true;
 
-                    unitToIcImages[unit] = iconeImages;
+                        Image iconeImg = iconeT.GetComponentInChildren<Image>();
+                        if (iconeImg != null) iconeImg.sprite = unit.iconeSprite;
+
+                        HealthBar hb = iconeT.GetComponentInChildren<HealthBar>();
+                        if (hb != null) hb.unit = unit;
+
+                        unitToIcImages[unit] = iconeImages;
+                    }
+
+                    // Abonne l'event de mort (une seule fois)
+                    unit.OnDeath += OnUnitDied;
                 }
-
-                // Abonne l'event de mort
-                unit.OnDeath += OnUnitDied;
             }
         }
     }
