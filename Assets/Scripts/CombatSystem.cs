@@ -1,22 +1,34 @@
 using UnityEngine;
-using System.Threading.Tasks;
+using System.Collections;
 using System.Collections.Generic;
 
+/// <summary>
+/// CombatSystem refactorisé en Coroutine (plus de async/await).
+/// GameManager attend la fin du combat avant de changer de phase.
+/// </summary>
 public static class CombatSystem
 {
-    public async static void ResolveCombat(Pion attacker, Pion defender)
+    /// <summary>
+    /// Coroutine principale appelée par GameManager via StartCoroutine.
+    /// </summary>
+    public static IEnumerator ResolveCombatCoroutine(Pion attacker, Pion defender)
     {
+        if (attacker == null || defender == null) yield break;
+
+        // Afficher l'UI de combat (pion gauche = joueur, droit = ennemi)
         Pion left = attacker.isEnemy ? defender : attacker;
         Pion right = attacker.isEnemy ? attacker : defender;
+        CombatUI.Instance?.ShowCombat(left, right);
 
-        CombatUI.Instance.ShowCombat(left, right);
-        await Task.Delay(5000);
+        yield return new WaitForSeconds(2f); // pause avant les échanges
 
+        // Jusqu'à 6 échanges alternés
         bool attackerTurn = true;
         for (int i = 0; i < 6; i++)
         {
-            if (!attacker.squad.IsAlive() || !defender.squad.IsAlive())
-                break;
+            // Vérification de nullité (pion peut être détruit pendant les tours)
+            if (attacker == null || !attacker.squad.IsAlive()) break;
+            if (defender == null || !defender.squad.IsAlive()) break;
 
             if (attackerTurn)
                 ResolveAttack(attacker.squad, defender.squad);
@@ -24,30 +36,33 @@ public static class CombatSystem
                 ResolveAttack(defender.squad, attacker.squad);
 
             attackerTurn = !attackerTurn;
-            await Task.Delay(3000);
+            yield return new WaitForSeconds(1.5f);
         }
 
-        CombatUI.Instance.HideCombat();
+        CombatUI.Instance?.HideCombat();
 
-        // Retire les pions morts de la carte
-        if (!attacker.squad.IsAlive()) attacker.Die();
-        if (!defender.squad.IsAlive()) defender.Die();
+        // Éliminer les pions morts
+        if (attacker != null && !attacker.squad.IsAlive()) attacker.Die();
+        if (defender != null && !defender.squad.IsAlive()) defender.Die();
 
-        // Vérifie la fin de partie immédiatement après le combat
-        GameManager.Instance?.CheckGameOver();
+        // Petite pause après la fin du combat avant de rendre la main
+        yield return new WaitForSeconds(0.5f);
     }
+
+    //  Résolution d'un échange 
 
     public static void ResolveAttack(Squad attacker, Squad defender)
     {
         if (attacker == null || defender == null) return;
 
-        Debug.Log("Combat entre " + attacker.name + " et " + defender.name);
+        Debug.Log($"Combat : {attacker.name} → {defender.name}");
 
-        List<Unit> round2 = new List<Unit>();
-        List<Unit> round3 = new List<Unit>();
-        List<Unit> round4 = new List<Unit>();
-        List<Unit> round5 = new List<Unit>();
-        List<Unit> round6 = new List<Unit>();
+        // Trier les unités par ordre d'attaque
+        var round2 = new List<Unit>();
+        var round3 = new List<Unit>();
+        var round4 = new List<Unit>();
+        var round5 = new List<Unit>();
+        var round6 = new List<Unit>();
 
         foreach (Unit u in attacker.GetLivingUnits())
         {
@@ -58,14 +73,17 @@ public static class CombatSystem
                 case 4: round4.Add(u); break;
                 case 5: round5.Add(u); break;
                 case 6: round6.Add(u); break;
-                default: Debug.Log(u.unitName + " : Order inconnu."); break;
+                default: Debug.LogWarning($"{u.unitName} : ordre d'attaque inconnu."); break;
             }
         }
 
+        // Ordre 2 – Magie (splash)
         if (round2.Count > 0)
         {
             foreach (Unit u in round2)
-                u.target = u.GetComponent<UnitMagic>().CanAttack() ? FindUnprotectedUnits(defender) : null;
+                u.target = u.GetComponent<UnitMagic>()?.CanAttack() == true
+                    ? FindUnprotectedUnits(defender) : null;
+
             foreach (Unit u in round2)
             {
                 if (u.target == null) continue;
@@ -76,6 +94,7 @@ public static class CombatSystem
             defender.UpdatedAttackInfo();
         }
 
+        // Ordre 3 – Attaque sur unités non protégées
         if (round3.Count > 0)
         {
             foreach (Unit u in round3) u.target = FindUnprotectedUnits(defender);
@@ -83,6 +102,7 @@ public static class CombatSystem
             defender.UpdatedAttackInfo();
         }
 
+        // Ordre 4 – Première ligne
         if (round4.Count > 0)
         {
             foreach (Unit u in round4) u.target = FindTargetFirstLine(defender);
@@ -90,6 +110,7 @@ public static class CombatSystem
             defender.UpdatedAttackInfo();
         }
 
+        // Ordre 5 – Première ligne
         if (round5.Count > 0)
         {
             foreach (Unit u in round5) u.target = FindTargetFirstLine(defender);
@@ -97,6 +118,7 @@ public static class CombatSystem
             defender.UpdatedAttackInfo();
         }
 
+        // Ordre 6 – Soin sur alliés blessés
         if (round6.Count > 0)
         {
             foreach (Unit u in round6) u.target = FindHurtUnit(attacker);
@@ -104,6 +126,8 @@ public static class CombatSystem
             attacker.UpdatedAttackInfo();
         }
     }
+
+    //  Sélection de cibles 
 
     private static Unit FindTargetFirstLine(Squad defender)
     {

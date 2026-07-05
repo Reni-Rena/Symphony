@@ -1,13 +1,12 @@
 using UnityEngine;
 
-public enum TerrainType
-{
-    Plaine,
-    Foret,
-    Eau,
-    Montagne
-}
+public enum TerrainType { Plaine, Foret, Eau, Montagne }
 
+/// <summary>
+/// La Tile ne prend plus de décisions : elle expose son état (deplacement/attaque)
+/// via des flags booléens, et ne fait plus de FindObjectsByType dans OnClicked.
+/// Toute la logique d'interaction est dans GameManager.
+/// </summary>
 public class Tile : MonoBehaviour
 {
     [Header("Terrain")]
@@ -21,6 +20,13 @@ public class Tile : MonoBehaviour
     public Color moveColor;
     public Color attackColor;
 
+    //  État interne (plus fiable que tester la couleur) 
+    private bool _estCaseDeplacement = false;
+    private bool _estCaseAttaque = false;
+
+    public bool EstCaseDeplacement() => _estCaseDeplacement;
+    public bool EstCaseAttaque() => _estCaseAttaque;
+
     void Awake()
     {
         _renderer = GetComponent<SpriteRenderer>();
@@ -28,7 +34,6 @@ public class Tile : MonoBehaviour
         baseColor = _renderer.color;
     }
 
-    // Applique la couleur de base selon le type de terrain
     public void ApplyTerrainColor()
     {
         if (palette == null) return;
@@ -72,49 +77,17 @@ public class Tile : MonoBehaviour
         }
     }
 
-    // Survol souris : met à jour la bottom bar 
+    //  Survol 
 
     void OnMouseEnter()
     {
         Vector2 pos = new Vector2(
             Mathf.Round(transform.position.x),
             Mathf.Round(transform.position.y));
-
         HUDManager.Instance?.UpdateBottomBar(GetTerrainName(), GetTerrainDefense(), pos);
     }
 
-    // Clic 
-
-    public void OnClicked()
-    {
-        Pion selectedPion = null;
-        foreach (Pion u in FindObjectsByType<Pion>(FindObjectsSortMode.None))
-        {
-            if (u.IsSelected()) { selectedPion = u; break; }
-        }
-
-        if (selectedPion != null && _renderer.color == moveColor)
-        {
-            bool occupied = false;
-            foreach (Pion u in FindObjectsByType<Pion>(FindObjectsSortMode.None))
-            {
-                if ((Vector2)u.transform.position == (Vector2)transform.position)
-                { occupied = true; break; }
-            }
-            if (!occupied) selectedPion.MoveTo(transform.position);
-        }
-
-        if (selectedPion != null && _renderer.color == attackColor)
-        {
-            foreach (Pion u in FindObjectsByType<Pion>(FindObjectsSortMode.None))
-            {
-                if ((Vector2)u.transform.position == (Vector2)transform.position && u.isEnemy)
-                { selectedPion.Combat(u); break; }
-            }
-        }
-    }
-
-    // Highlights
+    //  Highlights 
 
     public static void HighlightTiles(Pion pion)
     {
@@ -126,28 +99,48 @@ public class Tile : MonoBehaviour
             Vector2 tilePos = new Vector2(
                 Mathf.Round(tile.transform.position.x),
                 Mathf.Round(tile.transform.position.y));
+
+            // Ne pas surligner la case du pion lui-même
+            if (tilePos == pionPos) continue;
+
             float dist = Mathf.Abs(tilePos.x - pionPos.x) + Mathf.Abs(tilePos.y - pionPos.y);
-            if (dist <= range) tile._renderer.color = tile.moveColor;
+            if (dist <= range)
+            {
+                tile._renderer.color = tile.moveColor;
+                tile._estCaseDeplacement = true;
+            }
         }
     }
 
     public static void HighlightAttackableTiles(Pion pion)
     {
         Vector2 pionPos = pion.GetGridPosition();
+        int range = 1; // portée d'attaque — ajustez selon vos règles
 
         foreach (Tile tile in FindObjectsByType<Tile>(FindObjectsSortMode.None))
         {
             Vector2 tilePos = new Vector2(
                 Mathf.Round(tile.transform.position.x),
                 Mathf.Round(tile.transform.position.y));
+
+            if (tilePos == pionPos) continue;
+
             float dist = Mathf.Abs(tilePos.x - pionPos.x) + Mathf.Abs(tilePos.y - pionPos.y);
-            if (dist <= 1) tile._renderer.color = tile.attackColor;
+            if (dist <= range)
+            {
+                tile._renderer.color = tile.attackColor;
+                tile._estCaseAttaque = true;
+            }
         }
     }
 
     public static void ClearHighlights()
     {
         foreach (Tile tile in FindObjectsByType<Tile>(FindObjectsSortMode.None))
+        {
             tile._renderer.color = tile.baseColor;
+            tile._estCaseDeplacement = false;
+            tile._estCaseAttaque = false;
+        }
     }
 }

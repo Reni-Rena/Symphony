@@ -1,8 +1,11 @@
 using UnityEngine;
-using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
 
+/// <summary>
+/// Le Pion ne contient plus de logique FSM.
+/// Il expose des méthodes appelées par GameManager.
+/// </summary>
 public class Pion : MonoBehaviour
 {
     private SpriteRenderer _renderer;
@@ -15,7 +18,7 @@ public class Pion : MonoBehaviour
     public bool isEnemy = false;
 
     public Squad squad;
-    private Vector3 caseDepart;
+
     public int moveRange = 3;
     public float moveSpeed = 5f;
 
@@ -34,56 +37,34 @@ public class Pion : MonoBehaviour
             _renderer.color = isSelected ? selectColor : baseColor;
     }
 
-    public void OnClicked()
+    //  Sélection 
+
+    /// <summary>Appelé par GameManager pour marquer ce pion comme sélectionné/désélectionné.</summary>
+    public void SetSelected(bool selected)
     {
-        GameManager gm = FindAnyObjectByType<GameManager>();
-        if (gm.currentTurn != GameManager.Turn.Player || isEnemy) return;
-
-        foreach (Pion u in FindObjectsByType<Pion>(FindObjectsSortMode.None))
-            if (u != this) u.Deselect();
-
-        Tile.ClearHighlights();
-
-        isSelected = !isSelected;
-        _renderer.color = isSelected ? Color.yellow : baseColor;
-
-        if (isSelected)
-        {
-            Tile.HighlightTiles(this);
-            HUDManager.Instance?.ShowPionInfo(this); // affiche les infos
-        }
-        else
-        {
-            HUDManager.Instance?.HidePanel(); // cache le panneau si on déselectionne
-        }
+        isSelected = selected;
     }
 
-    public void Deselect()
+    public bool IsSelected() => isSelected;
+    public int GetMoveRange() => moveRange;
+
+    public Vector2 GetGridPosition()
     {
-        isSelected = false;
-        HUDManager.Instance?.HidePanel();
-    }
-
-    public void ResetAction() { hasActed = false; }
-
-    public void MoveTo(Vector2 targetPosition)
-    {
-        GameManager gm = FindAnyObjectByType<GameManager>();
-        if ((isEnemy && gm.currentTurn == GameManager.Turn.Player) ||
-            (!isEnemy && gm.currentTurn == GameManager.Turn.Enemy)) return;
-        if (hasActed) return;
-
-        StartDeplacement();
-        StartCoroutine(MovePathCoroutine(targetPosition));
-        Tile.ClearHighlights();
-        EndDeplacement();
-    }
-
-    public IEnumerator MovePathCoroutine(Vector2 targetPos)
-    {
-        Vector2 currentPos = new Vector2(
+        return new Vector2(
             Mathf.Round(transform.position.x),
             Mathf.Round(transform.position.y));
+    }
+
+    //  Déplacement 
+
+    /// <summary>
+    /// Déplace le pion case par case en suivant un chemin Manhattan.
+    /// À appeler via StartCoroutine depuis GameManager.
+    /// Le menu n'est PAS ouvert ici — c'est GameManager qui le fait après le yield.
+    /// </summary>
+    public IEnumerator MovePathCoroutine(Vector2 targetPos)
+    {
+        Vector2 currentPos = GetGridPosition();
 
         List<Vector2> path = new List<Vector2>();
 
@@ -111,29 +92,7 @@ public class Pion : MonoBehaviour
         }
     }
 
-    void StartDeplacement() { caseDepart = transform.position; }
-
-    void EndDeplacement()
-    {
-        ActionMenuUI menu = FindAnyObjectByType<ActionMenuUI>();
-        menu.Show(
-            () => AnnulerDeplacement(),
-            () => ValiderDeplacement(),
-            () => Attaquer()
-        );
-    }
-
-    void AnnulerDeplacement() { Deselect(); transform.position = caseDepart; }
-    void ValiderDeplacement() { Deselect(); hasActed = true; }
-    void Attaquer() { Tile.HighlightAttackableTiles(this); }
-
-    public void Combat(Pion squadB)
-    {
-        CombatSystem.ResolveCombat(this, squadB);
-        Tile.ClearHighlights();
-        Deselect();
-        hasActed = true;
-    }
+    //  Combat 
 
     public void Die()
     {
@@ -141,12 +100,7 @@ public class Pion : MonoBehaviour
         Destroy(gameObject);
     }
 
-    public bool IsSelected() { return isSelected; }
-    public int GetMoveRange() { return moveRange; }
-    public Vector2 GetGridPosition()
-    {
-        return new Vector2(
-        Mathf.Round(transform.position.x),
-        Mathf.Round(transform.position.y));
-    }
+    //  Tour 
+
+    public void ResetAction() { hasActed = false; }
 }
