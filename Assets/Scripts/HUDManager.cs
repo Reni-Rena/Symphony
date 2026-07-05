@@ -33,7 +33,6 @@ public class HUDManager : MonoBehaviour
     public GameObject movePipUsedPrefab; // petit carre grise (deplacement utilise)
 
     [Header("Bottom Bar")]
-    public Image bottomBar;
     public TextMeshProUGUI terrainLabelTitle;
     public TextMeshProUGUI terrainLabel;
     public TextMeshProUGUI terrainDefTitle;
@@ -60,10 +59,7 @@ public class HUDManager : MonoBehaviour
 
     public void InitializedColor()
     {
-        topBar.color = palette.encreNoire02; 
         turnNumber.color = palette.terreCuite01;
-        endTurnButton.GetComponent<Image>().color = palette.encreNoire02;
-        endTurnButton.GetComponentInChildren<TextMeshProUGUI>().color = palette.parchemin;
 
         portraitBackground.color = palette.encreNoire01;
         portraitIcon.color = palette.parchemin;
@@ -74,7 +70,6 @@ public class HUDManager : MonoBehaviour
         statDeplacementTitle.color = palette.terreCuite01;
         statDeplacement.color = palette.parchemin;
 
-        bottomBar.color = palette.encreNoire02;
         terrainLabelTitle.color = palette.terreCuite01;
         terrainLabel.color = palette.parchemin;
         terrainDefTitle.color = palette.terreCuite01;
