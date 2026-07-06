@@ -30,14 +30,11 @@ public class Squad : MonoBehaviour
 
     // Chef de l'escouade : la premiere unite placee avec succes
     public Unit squadLeader { get; private set; }
-
-    // Valeur de Lead du chef de l'escouade (0 si pas de chef)
     public int Lead { get { return squadLeader != null ? squadLeader.lead : 0; } }
-
-    // Type de deplacement de l'escouade, calcule depuis les unites vivantes
+    public int leadPointsUsed { get; private set; }
+    public int leadPointsMax { get { return Lead; } }
+    public int leadPointsRemaining { get { return leadPointsMax - leadPointsUsed; } }
     public MoveType squadMoveType { get; private set; }
-
-    // Types de l'escouade, calcules selon les seuils de chaque UnitType
     public List<UnitType> squadTypes { get; private set; } = new List<UnitType>();
 
 
@@ -47,12 +44,16 @@ public class Squad : MonoBehaviour
         UpdatedAttackInfo();
     }
 
-    // Construction de la formation
+    // Construction de la formation.
+    // La premiere unite placee avec succes devient chef (gratuite).
+    // Chaque unite suivante doit avoir la place disponible ET
+    // les points de commandement suffisants (selon son tier).
     public void BuildFormation()
     {
         formation = new Unit[gridWidth, gridHeight];
         occupiedCells.Clear();
         squadLeader = null;
+        leadPointsUsed = 0;
 
         foreach (var slot in slots)
         {
@@ -61,15 +62,36 @@ public class Squad : MonoBehaviour
             Unit u = Instantiate(slot.unitPrefab, transform);
             Vector2Int size = u.size;
 
+            // Verifier la place disponible dans la grille
             if (!CanPlaceUnit(slot.x, slot.y, size))
             {
-                Debug.LogWarning($"Impossible de placer {u.unitName} en {slot.x},{slot.y} : place occupée !");
+                Debug.LogWarning($"Impossible de placer {u.unitName} en ({slot.x},{slot.y}) : place occupee.");
                 Destroy(u.gameObject);
                 continue;
             }
 
-            List<Vector2Int> cells = new List<Vector2Int>();
+            // La premiere unite reussie devient chef : elle est gratuite
+            bool isLeader = (squadLeader == null);
 
+            if (!isLeader)
+            {
+                // Verifier les points de commandement disponibles
+                // Le chef doit deja etre place pour que Lead soit connu
+                int cost = u.GetCommandCost();
+                if (leadPointsUsed + cost > leadPointsMax)
+                {
+                    Debug.LogWarning(
+                        $"Impossible de placer {u.unitName} (Tier {u.GetTier()}) en ({slot.x},{slot.y}) : " +
+                        $"cout {cost} pts, disponibles {leadPointsMax - leadPointsUsed}/{leadPointsMax}.");
+                    Destroy(u.gameObject);
+                    continue;
+                }
+
+                leadPointsUsed += cost;
+            }
+
+            // Placer l'unite dans la formation
+            List<Vector2Int> cells = new List<Vector2Int>();
             for (int i = 0; i < size.x; i++)
             {
                 for (int j = 0; j < size.y; j++)
@@ -78,12 +100,19 @@ public class Squad : MonoBehaviour
                     cells.Add(new Vector2Int(slot.x + i, slot.y + j));
                 }
             }
-
             occupiedCells[u] = cells;
 
-            // La premiere unite placee avec succes devient le chef
-            if (squadLeader == null)
+            if (isLeader)
+            {
                 squadLeader = u;
+                Debug.Log($"{u.unitName} devient chef d'escouade avec {u.lead} pts de commandement.");
+            }
+            else
+            {
+                Debug.Log(
+                    $"{u.unitName} (Tier {u.GetTier()}) place : cout {u.GetCommandCost()} pts, " +
+                    $"restants {leadPointsRemaining}/{leadPointsMax}.");
+            }
         }
 
         ComputeSquadMoveType();

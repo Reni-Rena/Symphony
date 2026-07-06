@@ -36,7 +36,7 @@ public class Unit : MonoBehaviour
     public Sprite iconeDeadSprite;
     public Sprite imageSprite;
 
-    [Header("Stats d'unité")]
+    [Header("Stats d'unite")]
     [SerializeField] private int unitTier = 1;
     [SerializeField] private MoveType moveType;
     [SerializeField] private UnitType unitType;
@@ -80,7 +80,7 @@ public class Unit : MonoBehaviour
     public int magic;
     public int lead;
 
-    // Déclenché quand l'unité vient de mourir (une seule fois)
+    // Declenche quand l'unite vient de mourir (une seule fois)
     public event Action<Unit> OnDeath;
 
     public bool IsDead => currentHP <= 0;
@@ -129,4 +129,17 @@ public class Unit : MonoBehaviour
     public int GetAttackOrder() { return AttackOrder; }
     public MoveType GetUnitMoveType() { return moveType; }
     public UnitType GetUnitType() { return unitType; }
+    public int GetTier() { return unitTier; }
+
+    // Retourne le cout en points de commandement pour placer cette unite
+    public int GetCommandCost()
+    {
+        switch (unitTier)
+        {
+            case 1: return 8;
+            case 2: return 10;
+            case 3: return 13;
+            default: return 8;
+        }
+    }
 }
