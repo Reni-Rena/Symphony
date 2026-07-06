@@ -12,12 +12,14 @@ public class SquadSlot
 
 public class Squad : MonoBehaviour
 {
+    public string squadName = "Test";
+
     [Header("Taille de la grille")]
     public int gridWidth = 6;
     public int gridHeight = 6;
     public float cellSize = 0.5f;
 
-    [Header("Configuration dans l’inspecteur")]
+    [Header("Configuration dans l'inspecteur")]
     public List<SquadSlot> slots = new List<SquadSlot>();
 
     [HideInInspector] public Unit[,] formation;
@@ -26,7 +28,17 @@ public class Squad : MonoBehaviour
     public List<Unit> attackUnprotectedUnits = new List<Unit>();
     public List<Unit> attackHurtUnit = new List<Unit>();
 
+    // Chef de l'escouade : la premiere unite placee avec succes
+    public Unit squadLeader { get; private set; }
 
+    // Valeur de Lead du chef de l'escouade (0 si pas de chef)
+    public int Lead { get { return squadLeader != null ? squadLeader.lead : 0; } }
+
+    // Type de deplacement de l'escouade, calcule depuis les unites vivantes
+    public MoveType squadMoveType { get; private set; }
+
+    // Types de l'escouade, calcules selon les seuils de chaque UnitType
+    public List<UnitType> squadTypes { get; private set; } = new List<UnitType>();
 
 
     void Awake()
@@ -40,6 +52,7 @@ public class Squad : MonoBehaviour
     {
         formation = new Unit[gridWidth, gridHeight];
         occupiedCells.Clear();
+        squadLeader = null;
 
         foreach (var slot in slots)
         {
@@ -50,7 +63,7 @@ public class Squad : MonoBehaviour
 
             if (!CanPlaceUnit(slot.x, slot.y, size))
             {
-                Debug.LogWarning($"Impossible de placer {u.unitName} en {slot.x},{slot.y} : place occupée !");
+                Debug.LogWarning($"Impossible de placer {u.unitName} en {slot.x},{slot.y} : place occupÃ©e !");
                 Destroy(u.gameObject);
                 continue;
             }
@@ -67,10 +80,120 @@ public class Squad : MonoBehaviour
             }
 
             occupiedCells[u] = cells;
+
+            // La premiere unite placee avec succes devient le chef
+            if (squadLeader == null)
+                squadLeader = u;
         }
+
+        ComputeSquadMoveType();
+        ComputeSquadTypes();
     }
 
-    // Vérifie si une unité peut être placée à une position donnée
+    // Calcule le moveType de l'escouade selon les regles definies
+    private void ComputeSquadMoveType()
+    {
+        List<Unit> units = GetLivingUnits();
+
+        if (units.Count == 0)
+        {
+            squadMoveType = MoveType.Infanterie;
+            return;
+        }
+
+        // Maritime si le chef a moveType Maritime
+        if (squadLeader != null && GetMoveType(squadLeader) == MoveType.Maritime)
+        {
+            squadMoveType = MoveType.Maritime;
+            return;
+        }
+
+        // Volant si toutes les unites sont Volant
+        bool allFlying = true;
+        foreach (Unit u in units)
+        {
+            if (GetMoveType(u) != MoveType.Volant)
+            {
+                allFlying = false;
+                break;
+            }
+        }
+
+        if (allFlying)
+        {
+            squadMoveType = MoveType.Volant;
+            return;
+        }
+
+        // Cavalerie si toutes les unites sont Volant ou Cavalerie
+        bool allCavalryOrFlying = true;
+        foreach (Unit u in units)
+        {
+            MoveType mt = GetMoveType(u);
+            if (mt != MoveType.Volant && mt != MoveType.Cavalerie)
+            {
+                allCavalryOrFlying = false;
+                break;
+            }
+        }
+
+        if (allCavalryOrFlying)
+        {
+            squadMoveType = MoveType.Cavalerie;
+            return;
+        }
+
+        // Infanterie dans tous les autres cas
+        squadMoveType = MoveType.Infanterie;
+    }
+
+    private MoveType GetMoveType(Unit u)
+    {
+        return u.GetUnitMoveType();
+    }
+
+    // Calcule la liste des squadTypes en comptant les unites de chaque UnitType
+    // et en comparant aux seuils definis pour la taille de l'escouade.
+    private void ComputeSquadTypes()
+    {
+        squadTypes.Clear();
+
+        List<Unit> units = GetLivingUnits();
+        int count = units.Count;
+
+        if (count == 0) return;
+
+        // Compte les unites portant un UnitType donne (flags)
+        int CountOfType(UnitType type)
+        {
+            int n = 0;
+            foreach (Unit u in units)
+                if (u.GetUnitType().HasFlag(type)) n++;
+            return n;
+        }
+
+        // Lourd : seuil 1 pour 1-3 unites, 2 pour 4-7, 3 pour 8+
+        int lourdRequired = count <= 3 ? 1 : count <= 7 ? 2 : 3;
+        if (CountOfType(UnitType.Lourd) >= lourdRequired)
+            squadTypes.Add(UnitType.Lourd);
+
+        // Legere : meme logique que Lourd
+        int legereRequired = count <= 3 ? 1 : count <= 7 ? 2 : 3;
+        if (CountOfType(UnitType.Legere) >= legereRequired)
+            squadTypes.Add(UnitType.Legere);
+
+        // Magique : seuil 1 pour 1-4, 2 pour 5-6, 3 pour 7-8, 4 pour 9+
+        int magiqueRequired = count <= 4 ? 1 : count <= 6 ? 2 : count <= 8 ? 3 : 4;
+        if (CountOfType(UnitType.Magique) >= magiqueRequired)
+            squadTypes.Add(UnitType.Magique);
+
+        // Support : seuil 1 pour 1, 2 pour 2-4, 3 pour 5-7, 4 pour 8+
+        int supportRequired = count == 1 ? 1 : count <= 4 ? 2 : count <= 7 ? 3 : 4;
+        if (CountOfType(UnitType.Support) >= supportRequired)
+            squadTypes.Add(UnitType.Support);
+    }
+
+    // Verifie si une unite peut etre placee a une position donnee
     private bool CanPlaceUnit(int x, int y, Vector2Int size)
     {
         if (x + size.x > gridWidth || y + size.y > gridHeight) return false;
@@ -140,7 +263,7 @@ public class Squad : MonoBehaviour
 
             foreach (Vector2Int cell in kvp.Value)
             {
-                // On regarde toutes les lignes DEVANT la cellule
+                // On regarde toutes les lignes devant la cellule
                 for (int y = cell.y - 1; y >= 0; y--)
                 {
                     Unit frontUnit = formation[cell.x, y];
@@ -173,11 +296,9 @@ public class Squad : MonoBehaviour
             if (u.currentHP < u.maxHP) hurtunit.Add(u);
         }
         return hurtunit;
-        
     }
 
-
-    // Retourner toutes les unités vivantes
+    // Retourner toutes les unites vivantes
     public List<Unit> GetLivingUnits()
     {
         HashSet<Unit> alive = new HashSet<Unit>();
@@ -188,7 +309,7 @@ public class Squad : MonoBehaviour
         return new List<Unit>(alive);
     }
 
-    // Vérifier si l’escouade est encore en vie
+    // Verifier si l'escouade est encore en vie
     public bool IsAlive()
     {
         return GetLivingUnits().Count > 0;

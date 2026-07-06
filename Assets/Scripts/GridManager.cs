@@ -1,15 +1,15 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-// Zone rectangulaire d'un type de terrain donné.
-// Les zones sont appliquées dans l'ordre — la dernière écrase les précédentes.
+// Zone rectangulaire d'un type de terrain donne.
+// Les zones sont appliquees dans l'ordre -- la derniere ecrase les precedentes.
 [System.Serializable]
 public class TerrainZone
 {
     public TerrainType type = TerrainType.Plaine;
-    [Tooltip("Coin bas-gauche de la zone (coordonnées grille)")]
+    [Tooltip("Coin bas-gauche de la zone (coordonnees grille)")]
     public Vector2Int from;
-    [Tooltip("Coin haut-droit de la zone (coordonnées grille)")]
+    [Tooltip("Coin haut-droit de la zone (coordonnees grille)")]
     public Vector2Int to;
 }
 
@@ -22,12 +22,12 @@ public class GridManager : MonoBehaviour
     public int heightMax = 10;
     public float cellSize = 1f;
 
-    [Header("Prefab & Palette")]
+    [Header("Prefab et Palette")]
     public GameObject tilePrefab;
     public GamePalette palette;
 
     [Header("Zones de terrain")]
-    [Tooltip("Par défaut tout est Plaine. Ajoute des zones pour placer Forêt, Eau, Montagne...")]
+    [Tooltip("Par defaut tout est Plaine. Ajoute des zones pour placer Foret, Colline, Montagne, Route, Riviere, Marais ou Desert.")]
     public List<TerrainZone> terrainZones = new List<TerrainZone>();
 
     // Dictionnaire pour retrouver une tile par position
@@ -51,10 +51,10 @@ public class GridManager : MonoBehaviour
                 Tile tile = go.GetComponent<Tile>();
                 tile.palette = palette;
 
-                // Terrain par défaut : Plaine
+                // Terrain par defaut : Plaine
                 tile.terrainType = TerrainType.Plaine;
 
-                // Applique les zones dans l'ordre (la dernière gagne)
+                // Applique les zones dans l'ordre (la derniere gagne)
                 Vector2Int coord = new Vector2Int(x, y);
                 foreach (TerrainZone zone in terrainZones)
                 {
@@ -71,7 +71,7 @@ public class GridManager : MonoBehaviour
         }
     }
 
-    // Utilitaire : retrouver une tile par coordonnée
+    // Retrouver une tile par coordonnee
     public Tile GetTile(int x, int y)
     {
         tileMap.TryGetValue(new Vector2Int(x, y), out Tile tile);

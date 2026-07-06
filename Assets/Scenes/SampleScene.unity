@@ -929,7 +929,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8366147293762740572, guid: 81a58095a5243ac4799adc2278acdfe3, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -1
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 8366147293762740572, guid: 81a58095a5243ac4799adc2278acdfe3, type: 3}
       propertyPath: m_LocalPosition.y
@@ -6852,11 +6852,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8366147293762740572, guid: 81a58095a5243ac4799adc2278acdfe3, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -3
+      value: -5
       objectReference: {fileID: 0}
     - target: {fileID: 8366147293762740572, guid: 81a58095a5243ac4799adc2278acdfe3, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -3
+      value: -2
       objectReference: {fileID: 0}
     - target: {fileID: 8366147293762740572, guid: 81a58095a5243ac4799adc2278acdfe3, type: 3}
       propertyPath: m_LocalPosition.z
@@ -15468,20 +15468,23 @@ MonoBehaviour:
     from: {x: -6, y: 0}
     to: {x: -4, y: 2}
   - type: 1
-    from: {x: -4, y: -1}
+    from: {x: -5, y: -1}
     to: {x: -1, y: 0}
   - type: 0
-    from: {x: -4, y: -1}
-    to: {x: -4, y: -1}
+    from: {x: 0, y: 0}
+    to: {x: 0, y: 0}
   - type: 0
     from: {x: -1, y: 0}
     to: {x: -1, y: 0}
-  - type: 2
+  - type: 5
     from: {x: -1, y: 3}
     to: {x: 0, y: 3}
-  - type: 2
+  - type: 5
     from: {x: -2, y: -3}
     to: {x: -2, y: -3}
+  - type: 4
+    from: {x: -6, y: -2}
+    to: {x: 2, y: -2}
 --- !u!4 &1393942326
 Transform:
   m_ObjectHideFlags: 0
@@ -19468,11 +19471,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8366147293762740572, guid: 7ee60a3cbb727674c993ae18d7576e3c, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: -7
       objectReference: {fileID: 0}
     - target: {fileID: 8366147293762740572, guid: 7ee60a3cbb727674c993ae18d7576e3c, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: -1
       objectReference: {fileID: 0}
     - target: {fileID: 8366147293762740572, guid: 7ee60a3cbb727674c993ae18d7576e3c, type: 3}
       propertyPath: m_LocalPosition.z

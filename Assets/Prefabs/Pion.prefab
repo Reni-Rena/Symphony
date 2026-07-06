@@ -167,6 +167,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4b6ad365a0ee2540a16fc49a94c1b8e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  squadName: Test
   gridWidth: 6
   gridHeight: 6
   cellSize: 0.6

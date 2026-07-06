@@ -127,5 +127,6 @@ public class Unit : MonoBehaviour
     }
 
     public int GetAttackOrder() { return AttackOrder; }
+    public MoveType GetUnitMoveType() { return moveType; }
     public UnitType GetUnitType() { return unitType; }
 }
