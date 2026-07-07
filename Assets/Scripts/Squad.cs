@@ -1,6 +1,5 @@
 using UnityEngine;
 using System.Collections.Generic;
-using UnityEngine.UIElements;
 
 [System.Serializable]
 public class SquadSlot
@@ -10,6 +9,14 @@ public class SquadSlot
     [Range(0, 5)] public int y;
 }
 
+/// <summary>
+/// Une escouade reference des unites existantes du PlayerRoster.
+///
+/// PlaceUnit  : reference une unite existante, marque isInSquad = true.
+/// RemoveUnit : retire l'unite de la formation, marque isInSquad = false.
+///              Ne detruit jamais le GameObject.
+/// MoveUnit   : deplace une unite deja referencee dans la grille.
+/// </summary>
 public class Squad : MonoBehaviour
 {
     public string squadName = "Test";
@@ -19,223 +26,221 @@ public class Squad : MonoBehaviour
     public int gridHeight = 6;
     public float cellSize = 0.5f;
 
-    [Header("Configuration dans l'inspecteur")]
+    // Slots utilises uniquement pour les escouades ennemies (instanciation propre).
+    // Pour les escouades joueur, utiliser PlaceUnit directement.
+    [Header("Slots (escouades ennemies uniquement)")]
     public List<SquadSlot> slots = new List<SquadSlot>();
 
     [HideInInspector] public Unit[,] formation;
     public Dictionary<Unit, List<Vector2Int>> occupiedCells = new Dictionary<Unit, List<Vector2Int>>();
+
     public List<Unit> attackTargetFirstLine = new List<Unit>();
     public List<Unit> attackUnprotectedUnits = new List<Unit>();
     public List<Unit> attackHurtUnit = new List<Unit>();
 
-    // Chef de l'escouade : la premiere unite placee avec succes
     public Unit squadLeader { get; private set; }
+
     public int Lead { get { return squadLeader != null ? squadLeader.lead : 0; } }
     public int leadPointsUsed { get; private set; }
     public int leadPointsMax { get { return Lead; } }
     public int leadPointsRemaining { get { return leadPointsMax - leadPointsUsed; } }
+
     public MoveType squadMoveType { get; private set; }
     public List<UnitType> squadTypes { get; private set; } = new List<UnitType>();
 
+    // True si c'est une escouade ennemie (gere ses propres instances d'unites).
+    [Header("Escouade ennemie")]
+    public bool isEnemySquad = false;
+
+    // -----------------------------------------------------------------------
+    // Cycle de vie
+    // -----------------------------------------------------------------------
 
     void Awake()
     {
-        BuildFormation();
-        UpdatedAttackInfo();
+        formation = new Unit[gridWidth, gridHeight];
+
+        // Les escouades ennemies construisent leur formation depuis les slots
+        // en instanciant leurs propres unites (comportement original).
+        if (isEnemySquad)
+            BuildFormationEnnemie();
     }
 
-    // Construction de la formation.
-    // La premiere unite placee avec succes devient chef (gratuite).
-    // Chaque unite suivante doit avoir la place disponible ET
-    // les points de commandement suffisants (selon son tier).
-    public void BuildFormation()
+    // -----------------------------------------------------------------------
+    // Construction pour escouades ennemies (instanciation propre)
+    // -----------------------------------------------------------------------
+
+    void BuildFormationEnnemie()
     {
         formation = new Unit[gridWidth, gridHeight];
         occupiedCells.Clear();
         squadLeader = null;
         leadPointsUsed = 0;
 
-        foreach (var slot in slots)
+        foreach (SquadSlot slot in slots)
         {
             if (slot.unitPrefab == null) continue;
 
             Unit u = Instantiate(slot.unitPrefab, transform);
-            Vector2Int size = u.size;
 
-            // Verifier la place disponible dans la grille
-            if (!CanPlaceUnit(slot.x, slot.y, size))
+            if (!CanPlaceUnit(slot.x, slot.y, u.size))
             {
-                Debug.LogWarning($"Impossible de placer {u.unitName} en ({slot.x},{slot.y}) : place occupee.");
+                Debug.LogWarning("Ennemi : impossible de placer " + u.unitName
+                                 + " en (" + slot.x + "," + slot.y + ").");
                 Destroy(u.gameObject);
                 continue;
             }
 
-            // La premiere unite reussie devient chef : elle est gratuite
             bool isLeader = (squadLeader == null);
 
             if (!isLeader)
             {
-                // Verifier les points de commandement disponibles
-                // Le chef doit deja etre place pour que Lead soit connu
                 int cost = u.GetCommandCost();
                 if (leadPointsUsed + cost > leadPointsMax)
                 {
-                    Debug.LogWarning(
-                        $"Impossible de placer {u.unitName} (Tier {u.GetTier()}) en ({slot.x},{slot.y}) : " +
-                        $"cout {cost} pts, disponibles {leadPointsMax - leadPointsUsed}/{leadPointsMax}.");
+                    Debug.LogWarning("Ennemi : cout insuffisant pour " + u.unitName + ".");
                     Destroy(u.gameObject);
                     continue;
                 }
-
                 leadPointsUsed += cost;
             }
 
-            // Placer l'unite dans la formation
-            List<Vector2Int> cells = new List<Vector2Int>();
-            for (int i = 0; i < size.x; i++)
-            {
-                for (int j = 0; j < size.y; j++)
-                {
-                    formation[slot.x + i, slot.y + j] = u;
-                    cells.Add(new Vector2Int(slot.x + i, slot.y + j));
-                }
-            }
-            occupiedCells[u] = cells;
+            InscrireUnite(u, slot.x, slot.y);
 
-            if (isLeader)
-            {
-                squadLeader = u;
-                Debug.Log($"{u.unitName} devient chef d'escouade avec {u.lead} pts de commandement.");
-            }
-            else
-            {
-                Debug.Log(
-                    $"{u.unitName} (Tier {u.GetTier()}) place : cout {u.GetCommandCost()} pts, " +
-                    $"restants {leadPointsRemaining}/{leadPointsMax}.");
-            }
+            if (isLeader) squadLeader = u;
         }
+
+        ComputeSquadMoveType();
+        ComputeSquadTypes();
+        UpdatedAttackInfo();
+    }
+
+    // -----------------------------------------------------------------------
+    // API editeur : placement, deplacement, retrait (escouades joueur)
+    // Ne cree ni ne detruit jamais de GameObject.
+    // -----------------------------------------------------------------------
+
+    // Assigne une unite existante a cette escouade et l'inscrit dans la grille.
+    // L'unite doit provenir du PlayerRoster et avoir isInSquad == false.
+    // isLeader = true : cette unite devient le chef (ignore le cout de commandement).
+    // Retourne false si la place est insuffisante ou les points manquent.
+    public bool PlaceUnit(Unit unit, int col, int row, bool isLeader = false)
+    {
+        if (unit == null) return false;
+        if (unit.isInSquad) return false;
+        if (!CanPlaceUnit(col, row, unit.size)) return false;
+
+        if (!isLeader)
+        {
+            int cost = unit.GetCommandCost();
+            if (leadPointsUsed + cost > leadPointsMax) return false;
+            leadPointsUsed += cost;
+        }
+
+        InscrireUnite(unit, col, row);
+
+        unit.isInSquad = true;
+        unit.assignedSquad = this;
+
+        if (isLeader) squadLeader = unit;
+
+        ComputeSquadMoveType();
+        ComputeSquadTypes();
+        return true;
+    }
+
+    // Retire une unite de la formation et la rend disponible dans le PlayerRoster.
+    // Ne detruit jamais le GameObject.
+    // Refuse si l'unite est le chef et qu'il reste d'autres membres.
+    // Retourne false si l'operation est interdite.
+    public bool RemoveUnit(Unit unit)
+    {
+        if (unit == null) return false;
+        if (!occupiedCells.ContainsKey(unit)) return false;
+
+        bool isLeader = (unit == squadLeader);
+        if (isLeader && GetLivingUnits().Count > 1) return false;
+
+        // Liberer les cellules
+        foreach (Vector2Int c in occupiedCells[unit])
+            formation[c.x, c.y] = null;
+        occupiedCells.Remove(unit);
+
+        // Rembourser les points de commandement
+        if (!isLeader)
+            leadPointsUsed -= unit.GetCommandCost();
+
+        if (isLeader) squadLeader = null;
+
+        // Rendre l'unite disponible dans le roster
+        unit.isInSquad = false;
+        unit.assignedSquad = null;
+
+        ComputeSquadMoveType();
+        ComputeSquadTypes();
+        return true;
+    }
+
+    // Deplace une unite deja dans la formation vers une nouvelle position.
+    // Retourne false si la destination est invalide ou occupee.
+    public bool MoveUnit(Unit unit, int newCol, int newRow)
+    {
+        if (!occupiedCells.ContainsKey(unit)) return false;
+
+        // Liberer les cellules actuelles temporairement pour valider la destination
+        List<Vector2Int> oldCells = occupiedCells[unit];
+        foreach (Vector2Int c in oldCells)
+            formation[c.x, c.y] = null;
+
+        if (!CanPlaceUnit(newCol, newRow, unit.size))
+        {
+            // Remettre l'unite en place et echouer
+            foreach (Vector2Int c in oldCells)
+                formation[c.x, c.y] = unit;
+            return false;
+        }
+
+        occupiedCells.Remove(unit);
+        InscrireUnite(unit, newCol, newRow);
+
+        ComputeSquadMoveType();
+        ComputeSquadTypes();
+        return true;
+    }
+
+    // Definit manuellement le chef (appele par SquadEditorUI apres un PlaceUnit en tant que chef).
+    // Recalcule leadPointsUsed depuis zero.
+    public void SetLeaderFromEditor(Unit unit)
+    {
+        squadLeader = unit;
+        leadPointsUsed = 0;
+        foreach (Unit u in GetLivingUnits())
+            if (u != squadLeader) leadPointsUsed += u.GetCommandCost();
 
         ComputeSquadMoveType();
         ComputeSquadTypes();
     }
 
-    // Calcule le moveType de l'escouade selon les regles definies
-    private void ComputeSquadMoveType()
+    // -----------------------------------------------------------------------
+    // Requetes utilitaires
+    // -----------------------------------------------------------------------
+
+    public bool CanPlaceUnit(int x, int y, Vector2Int size)
     {
-        List<Unit> units = GetLivingUnits();
-
-        if (units.Count == 0)
-        {
-            squadMoveType = MoveType.Infanterie;
-            return;
-        }
-
-        // Maritime si le chef a moveType Maritime
-        if (squadLeader != null && GetMoveType(squadLeader) == MoveType.Maritime)
-        {
-            squadMoveType = MoveType.Maritime;
-            return;
-        }
-
-        // Volant si toutes les unites sont Volant
-        bool allFlying = true;
-        foreach (Unit u in units)
-        {
-            if (GetMoveType(u) != MoveType.Volant)
-            {
-                allFlying = false;
-                break;
-            }
-        }
-
-        if (allFlying)
-        {
-            squadMoveType = MoveType.Volant;
-            return;
-        }
-
-        // Cavalerie si toutes les unites sont Volant ou Cavalerie
-        bool allCavalryOrFlying = true;
-        foreach (Unit u in units)
-        {
-            MoveType mt = GetMoveType(u);
-            if (mt != MoveType.Volant && mt != MoveType.Cavalerie)
-            {
-                allCavalryOrFlying = false;
-                break;
-            }
-        }
-
-        if (allCavalryOrFlying)
-        {
-            squadMoveType = MoveType.Cavalerie;
-            return;
-        }
-
-        // Infanterie dans tous les autres cas
-        squadMoveType = MoveType.Infanterie;
-    }
-
-    private MoveType GetMoveType(Unit u)
-    {
-        return u.GetUnitMoveType();
-    }
-
-    // Calcule la liste des squadTypes en comptant les unites de chaque UnitType
-    // et en comparant aux seuils definis pour la taille de l'escouade.
-    private void ComputeSquadTypes()
-    {
-        squadTypes.Clear();
-
-        List<Unit> units = GetLivingUnits();
-        int count = units.Count;
-
-        if (count == 0) return;
-
-        // Compte les unites portant un UnitType donne (flags)
-        int CountOfType(UnitType type)
-        {
-            int n = 0;
-            foreach (Unit u in units)
-                if (u.GetUnitType().HasFlag(type)) n++;
-            return n;
-        }
-
-        // Lourd : seuil 1 pour 1-3 unites, 2 pour 4-7, 3 pour 8+
-        int lourdRequired = count <= 3 ? 1 : count <= 7 ? 2 : 3;
-        if (CountOfType(UnitType.Lourd) >= lourdRequired)
-            squadTypes.Add(UnitType.Lourd);
-
-        // Legere : meme logique que Lourd
-        int legereRequired = count <= 3 ? 1 : count <= 7 ? 2 : 3;
-        if (CountOfType(UnitType.Legere) >= legereRequired)
-            squadTypes.Add(UnitType.Legere);
-
-        // Magique : seuil 1 pour 1-4, 2 pour 5-6, 3 pour 7-8, 4 pour 9+
-        int magiqueRequired = count <= 4 ? 1 : count <= 6 ? 2 : count <= 8 ? 3 : 4;
-        if (CountOfType(UnitType.Magique) >= magiqueRequired)
-            squadTypes.Add(UnitType.Magique);
-
-        // Support : seuil 1 pour 1, 2 pour 2-4, 3 pour 5-7, 4 pour 8+
-        int supportRequired = count == 1 ? 1 : count <= 4 ? 2 : count <= 7 ? 3 : 4;
-        if (CountOfType(UnitType.Support) >= supportRequired)
-            squadTypes.Add(UnitType.Support);
-    }
-
-    // Verifie si une unite peut etre placee a une position donnee
-    private bool CanPlaceUnit(int x, int y, Vector2Int size)
-    {
-        if (x + size.x > gridWidth || y + size.y > gridHeight) return false;
+        if (x < 0 || y < 0) return false;
+        if (x + size.x > gridWidth) return false;
+        if (y + size.y > gridHeight) return false;
 
         for (int i = 0; i < size.x; i++)
-        {
             for (int j = 0; j < size.y; j++)
-            {
                 if (formation[x + i, y + j] != null) return false;
-            }
-        }
+
         return true;
     }
+
+    // -----------------------------------------------------------------------
+    // Infos de combat
+    // -----------------------------------------------------------------------
 
     public void UpdatedAttackInfo()
     {
@@ -252,7 +257,7 @@ public class Squad : MonoBehaviour
     {
         List<Unit> frontline = new List<Unit>();
 
-        foreach (var kvp in occupiedCells)
+        foreach (KeyValuePair<Unit, List<Vector2Int>> kvp in occupiedCells)
         {
             Unit unit = kvp.Key;
             if (unit == null || unit.currentHP <= 0) continue;
@@ -264,9 +269,7 @@ public class Squad : MonoBehaviour
                 for (int y = cell.y - 1; y >= 0; y--)
                 {
                     Unit frontUnit = formation[cell.x, y];
-                    if (frontUnit != null &&
-                        frontUnit != unit &&
-                        frontUnit.currentHP > 0)
+                    if (frontUnit != null && frontUnit != unit && frontUnit.currentHP > 0)
                     {
                         hasSomeoneInFront = true;
                         break;
@@ -274,6 +277,7 @@ public class Squad : MonoBehaviour
                 }
                 if (hasSomeoneInFront) break;
             }
+
             if (!hasSomeoneInFront) frontline.Add(unit);
         }
         return frontline;
@@ -281,9 +285,9 @@ public class Squad : MonoBehaviour
 
     public List<Unit> GetUnprotectedUnits()
     {
-        List<Unit> Unprotected = new List<Unit>();
+        List<Unit> unprotected = new List<Unit>();
 
-        foreach (var kvp in occupiedCells)
+        foreach (KeyValuePair<Unit, List<Vector2Int>> kvp in occupiedCells)
         {
             Unit unit = kvp.Key;
             if (unit == null || unit.currentHP <= 0) continue;
@@ -292,14 +296,11 @@ public class Squad : MonoBehaviour
 
             foreach (Vector2Int cell in kvp.Value)
             {
-                // On regarde toutes les lignes devant la cellule
                 for (int y = cell.y - 1; y >= 0; y--)
                 {
                     Unit frontUnit = formation[cell.x, y];
-                    if (frontUnit != null &&
-                        frontUnit != unit &&
-                        frontUnit.currentHP > 0 &&
-                        frontUnit.GetUnitType().HasFlag(UnitType.Lourd))
+                    if (frontUnit != null && frontUnit != unit && frontUnit.currentHP > 0
+                        && frontUnit.GetUnitType().HasFlag(UnitType.Lourd))
                     {
                         if (frontUnit.GetComponent<UnitHeavy>().protectedCase + y >= cell.y)
                         {
@@ -308,39 +309,100 @@ public class Squad : MonoBehaviour
                         }
                     }
                 }
-
                 if (isProtected) break;
             }
-            if (!isProtected) Unprotected.Add(unit);
-        }
 
-        return Unprotected;
+            if (!isProtected) unprotected.Add(unit);
+        }
+        return unprotected;
     }
 
     public List<Unit> GetHurtUnits()
     {
-        List<Unit> hurtunit = new List<Unit>();
+        List<Unit> hurt = new List<Unit>();
         foreach (Unit u in GetLivingUnits())
-        {
-            if (u.currentHP < u.maxHP) hurtunit.Add(u);
-        }
-        return hurtunit;
+            if (u.currentHP < u.maxHP) hurt.Add(u);
+        return hurt;
     }
 
-    // Retourner toutes les unites vivantes
     public List<Unit> GetLivingUnits()
     {
         HashSet<Unit> alive = new HashSet<Unit>();
         foreach (Unit u in formation)
-        {
             if (u != null && u.currentHP > 0) alive.Add(u);
-        }
         return new List<Unit>(alive);
     }
 
-    // Verifier si l'escouade est encore en vie
     public bool IsAlive()
     {
         return GetLivingUnits().Count > 0;
+    }
+
+    // -----------------------------------------------------------------------
+    // Interne
+    // -----------------------------------------------------------------------
+
+    // Ecrit l'unite dans formation[] et occupiedCells sans aucune verification.
+    void InscrireUnite(Unit unit, int col, int row)
+    {
+        List<Vector2Int> cells = new List<Vector2Int>();
+        for (int i = 0; i < unit.size.x; i++)
+        {
+            for (int j = 0; j < unit.size.y; j++)
+            {
+                formation[col + i, row + j] = unit;
+                cells.Add(new Vector2Int(col + i, row + j));
+            }
+        }
+        occupiedCells[unit] = cells;
+    }
+
+    void ComputeSquadMoveType()
+    {
+        List<Unit> units = GetLivingUnits();
+        if (units.Count == 0) { squadMoveType = MoveType.Infanterie; return; }
+
+        if (squadLeader != null && squadLeader.GetUnitMoveType() == MoveType.Maritime)
+        { squadMoveType = MoveType.Maritime; return; }
+
+        bool allFlying = true;
+        foreach (Unit u in units)
+            if (u.GetUnitMoveType() != MoveType.Volant) { allFlying = false; break; }
+        if (allFlying) { squadMoveType = MoveType.Volant; return; }
+
+        bool allCavOrFly = true;
+        foreach (Unit u in units)
+        {
+            MoveType mt = u.GetUnitMoveType();
+            if (mt != MoveType.Volant && mt != MoveType.Cavalerie) { allCavOrFly = false; break; }
+        }
+
+        squadMoveType = allCavOrFly ? MoveType.Cavalerie : MoveType.Infanterie;
+    }
+
+    void ComputeSquadTypes()
+    {
+        squadTypes.Clear();
+        List<Unit> units = GetLivingUnits();
+        int count = units.Count;
+        if (count == 0) return;
+
+        int CountOfType(UnitType type)
+        {
+            int n = 0;
+            foreach (Unit u in units)
+                if (u.GetUnitType().HasFlag(type)) n++;
+            return n;
+        }
+
+        int lourdReq = count <= 3 ? 1 : count <= 7 ? 2 : 3;
+        int legereReq = count <= 3 ? 1 : count <= 7 ? 2 : 3;
+        int magiqueReq = count <= 4 ? 1 : count <= 6 ? 2 : count <= 8 ? 3 : 4;
+        int supportReq = count == 1 ? 1 : count <= 4 ? 2 : count <= 7 ? 3 : 4;
+
+        if (CountOfType(UnitType.Lourd) >= lourdReq) squadTypes.Add(UnitType.Lourd);
+        if (CountOfType(UnitType.Legere) >= legereReq) squadTypes.Add(UnitType.Legere);
+        if (CountOfType(UnitType.Magique) >= magiqueReq) squadTypes.Add(UnitType.Magique);
+        if (CountOfType(UnitType.Support) >= supportReq) squadTypes.Add(UnitType.Support);
     }
 }

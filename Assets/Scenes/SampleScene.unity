@@ -927,6 +927,10 @@ PrefabInstance:
       propertyPath: isEnemy
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 5055228082062931791, guid: 81a58095a5243ac4799adc2278acdfe3, type: 3}
+      propertyPath: isEnemySquad
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8366147293762740572, guid: 81a58095a5243ac4799adc2278acdfe3, type: 3}
       propertyPath: m_LocalPosition.x
       value: 2
@@ -20497,6 +20501,10 @@ PrefabInstance:
     - target: {fileID: 1757044708927144586, guid: 7ee60a3cbb727674c993ae18d7576e3c, type: 3}
       propertyPath: moveRange
       value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 5055228082062931791, guid: 7ee60a3cbb727674c993ae18d7576e3c, type: 3}
+      propertyPath: isEnemySquad
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5055228082062931791, guid: 7ee60a3cbb727674c993ae18d7576e3c, type: 3}
       propertyPath: slots.Array.size

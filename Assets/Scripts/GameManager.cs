@@ -21,7 +21,7 @@ public class GameManager : MonoBehaviour
     public Turn currentTurn = Turn.Player;
 
     //  FSM 
-    public enum Phase { Idle, Selected, Menu, Attacking, Busy }
+    public enum Phase { Idle, Selected, Menu, Attacking, Busy, SquadEditor }
     public Phase currentPhase = Phase.Idle;
 
     // Pion actuellement sélectionné
@@ -50,8 +50,9 @@ public class GameManager : MonoBehaviour
     //  Input principal 
     void Update()
     {
-        // Aucune entrée pendant une animation / combat
+        // Aucune entree pendant une animation, un combat ou l'editeur d'escouade
         if (currentPhase == Phase.Busy) return;
+        if (currentPhase == Phase.SquadEditor) return;
 
         // Clic droit : annulation dans tous les états
         if (Input.GetMouseButtonDown(1))
@@ -378,6 +379,42 @@ public class GameManager : MonoBehaviour
         }
 
         enemy.hasActed = true;
+    }
+
+    // Editeur d'escouade
+
+    // Ouvre l'editeur pour le pion donne.
+    // Met le jeu en pause et masque les highlights de la carte.
+    // Peut etre appele depuis un bouton du menu d'action ou du HUD.
+    public void OuvrirEditeurEscouade(Pion pion)
+    {
+        if (pion == null || pion.squad == null) return;
+        if (currentPhase == Phase.SquadEditor) return;
+
+        ActionMenuUI.Instance?.Hide();
+        Tile.ClearHighlights();
+
+        currentPhase = Phase.SquadEditor;
+        Time.timeScale = 0f;
+
+        SquadEditorUI.Instance?.Open(pion.squad);
+    }
+
+    // Ferme l'editeur d'escouade et reprend le jeu en phase Idle.
+    // Appele par SquadEditorUI quand le joueur confirme ou annule.
+    public void FermerEditeurEscouade()
+    {
+        Time.timeScale = 1f;
+
+        if (selectedPion != null)
+        {
+            selectedPion.SetSelected(false);
+            selectedPion = null;
+        }
+        aEteDeplace = false;
+
+        currentPhase = Phase.Idle;
+        HUDManager.Instance?.HidePanel();
     }
 
     //  Utilitaires 

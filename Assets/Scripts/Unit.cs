@@ -8,6 +8,7 @@ public enum MoveType
     Volant,
     Maritime
 }
+
 [System.Flags]
 public enum UnitType
 {
@@ -18,6 +19,7 @@ public enum UnitType
     Magique = 1 << 3,
     Support = 1 << 4
 }
+
 public enum RaceType
 {
     Humain,
@@ -80,7 +82,10 @@ public class Unit : MonoBehaviour
     public int magic;
     public int lead;
 
-    // Declenche quand l'unite vient de mourir (une seule fois)
+    [Header("Affectation")]
+    public bool isInSquad = false;
+    public Squad assignedSquad = null;
+
     public event Action<Unit> OnDeath;
 
     public bool IsDead => currentHP <= 0;
@@ -100,7 +105,7 @@ public class Unit : MonoBehaviour
 
     public void TakeDamage(int dmg)
     {
-        if (IsDead) return; // deja morte, on ignore
+        if (IsDead) return;
 
         int realDmg = Mathf.Max(0, dmg - armor);
         currentHP -= realDmg;
@@ -109,14 +114,13 @@ public class Unit : MonoBehaviour
         if (currentHP <= 0)
         {
             currentHP = 0;
-            OnDeath?.Invoke(this); // notifie l'UI
+            OnDeath?.Invoke(this);
         }
     }
 
     public void HealDamage(int heal)
     {
-        if (IsDead) return; // on ne soigne pas les morts
-
+        if (IsDead) return;
         currentHP = Mathf.Min(currentHP + heal, maxHP);
     }
 
